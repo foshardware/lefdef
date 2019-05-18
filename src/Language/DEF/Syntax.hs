@@ -1,11 +1,11 @@
 
-module Language.LEF.Syntax where
+module Language.DEF.Syntax where
 
 import Data.Text (Text)
 
 type Ident = Text
 
-data LEF = LEF [Option] [Layer] [Via] [ViaRule] [Site] [Macro]
+data DEF = DEF [Option] [Layer] [Via] [ViaRule] [Site] [Macro]
   deriving (Eq, Show)
 
 data Option

@@ -1,5 +1,5 @@
 {
-module Language.LEF.Lexer
+module Language.DEF.Lexer
     ( Lexer (..)
     , Token (..)
     , lexer
@@ -8,7 +8,7 @@ module Language.LEF.Lexer
 import Data.Char (ord)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import Language.LEF.Tokens
+import Language.DEF.Tokens
 }
 
 $any     = [.\n\r]

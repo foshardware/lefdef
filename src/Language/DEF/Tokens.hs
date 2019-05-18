@@ -1,5 +1,5 @@
 
-module Language.LEF.Tokens
+module Language.DEF.Tokens
     ( Lexer (..)
     , Pos
     , Token (..)

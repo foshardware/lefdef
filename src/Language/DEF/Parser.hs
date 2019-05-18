@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 
-module Language.LEF.Parser where
+module Language.DEF.Parser where
 
 import Control.Applicative (optional)
 import Control.Monad
@@ -13,17 +13,17 @@ import Prelude hiding (null)
 
 import Text.ParserCombinators.Parsec.Number (floating3, int, sign)
 
-import Language.LEF.Lexer
-import Language.LEF.Syntax
+import Language.DEF.Lexer
+import Language.DEF.Syntax
 
 
 type Parser = GenParser (Lexer Token) ()
 
-parseLEF :: Text -> Either ParseError LEF
-parseLEF = parse lef [] . lexer []
+parseDEF :: Text -> Either ParseError DEF
+parseDEF = parse lef [] . lexer []
 
-lef :: Parser LEF
-lef = LEF
+lef :: Parser DEF
+lef = DEF
   <$> many1 option
   <*> many layer
   <*> many via

@@ -1,6 +1,6 @@
-name:                lef
+name:                def
 version:             0.1.0.0
-github:              "foshardware/lef"
+github:              "foshardware/def"
 license:             BSD3
 author:              "Andreas Westerwick"
 maintainer:          "westerwick@pconas.de"
