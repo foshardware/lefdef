@@ -20,23 +20,116 @@ import Language.DEF.Syntax
 type Parser = GenParser (Lexer Token) ()
 
 parseDEF :: Text -> Either ParseError DEF
-parseDEF = parse lef [] . lexer []
+parseDEF = parse def [] . lexer []
 
-lef :: Parser DEF
-lef = DEF
+def :: Parser DEF
+def = DEF
   <$> many1 option
-  <*> many layer
-  <*> many via
-  <*> many viaRule
-  <*> many site
-  <*> many1 macro
-  <*  endLibrary
-  <?> "lef"
+  <*> dieArea
+  <*> many track
+  <*> components
+  <*> pins
+  <*> nets
+  <*  endDesign
+  <?> "def"
+
+
+dieArea :: Parser DieArea
+dieArea = diearea_ >> DieArea
+  <$> tuple double 
+  <*> tuple double
+  <?> "die_area"
+
+
+tuple :: Parser a -> Parser (a, a)
+tuple f = between lparen_ rparen_ ((,) <$> f <*> f) 
+  <?> "tuple"
+
+
+track :: Parser Track
+track = tracks_ >> Track
+  <$> xy
+  <*> double
+  <*> (do_ *> integer)
+  <*> (step_ *> double)
+  <*> (layer_ *> ident)
+  <?> "track"
+
+
+xy :: Parser XY
+xy = ident <?> "xy"
+
+
+components :: Parser [Component]
+components = components_ *> integer *> minus_ *> sepBy1 component minus_ <* end_ <* components_
+  <?> "components"
+
+
+component :: Parser Component
+component = Component
+  <$> ident
+  <*> ident
+  <*> optional (plus_ *> placed)
+  <?> "component"
+
+
+placed :: Parser Placed
+placed = placed_ >> Placed
+  <$> tuple double
+  <*> ori
+  <?> "placed"
+
+
+ori :: Parser Ori
+ori = ident <?> "ori"
+
+
+pins :: Parser [Pin]
+pins = pins_ *> integer *> minus_ *> sepBy1 pin minus_ <* end_ <* pins_
+  <?> "pins"
+
+
+layer :: Parser Layer
+layer = layer_ >> Layer
+  <$> ident
+  <*> tuple integer
+  <*> tuple integer
+  <?> "layer"
+
+
+pin :: Parser Pin
+pin = Pin
+  <$> ident
+  <*> (optional plus_ *> optional (net_ *> ident))
+  <*> (optional plus_ *> optional layer)
+  <*> (optional plus_ *> optional placed)
+  <?> "pin"
+
+
+nets :: Parser [Net]
+nets = nets_ *> integer *> minus_ *> sepBy1 net minus_ <* end_ <* nets_
+  <?> "nets"
+
+
+net :: Parser Net
+net = Net
+  <$> ident
+  <*> many1 (lparen_ *> contact <* rparen_)
+  <?> "net"
+
+
+contact :: Parser Contact
+contact
+  =   Left  <$> (pin_ *> ident)
+  <|> Right <$> ((,) <$> ident <*> ident)
+  <?> "contact"
+
 
 option :: Parser Option
 option
   =   version
   <|> cases
+  <|> design
   <|> bitChars
   <|> divideChars
   <|> units
@@ -45,6 +138,10 @@ option
   <|> manufacturingGrid
   <?> "option"
 
+
+design :: Parser Option
+design = design_ >> Design <$> ident
+    <?> "design"
 
 version :: Parser Option
 version = version_ >> Version <$> double
@@ -63,12 +160,12 @@ divideChars = dividerchar_ >> DivideChar <$> stringLiteral
     <?> "divide_char"
 
 units :: Parser Option
-units = units_ >> Units <$> databaseList <* end_ <* units_
+units = units_ >> Units <$> distanceList
     <?> "units"
 
-databaseList :: Parser DatabaseList
-databaseList = database_ >> microns_ >> DatabaseList <$> integer
-    <?> "database_list"
+distanceList :: Parser DistanceList
+distanceList = distance_ >> microns_ >> DistanceList <$> integer
+    <?> "distance_list"
 
 useMinSpacing :: Parser Option
 useMinSpacing = useminspacing_ >> (obs_ <|> pin_) >> UseMinSpacing <$> boolean
@@ -82,169 +179,12 @@ manufacturingGrid :: Parser Option
 manufacturingGrid = manufacturinggrid_ >> ManufacturingGrid <$> double
     <?> "manufacturing_grid"
 
-layer :: Parser Layer
-layer = Layer
-  <$> layerName
-  <*> many layerOption
-  <*> (end_ *> ident)
-  <?> "layer"
 
-layerName :: Parser LayerName
-layerName = layer_ *> ident <?> "layer_name"
 
-layerOption :: Parser LayerOption
-layerOption
-  =   Type        <$> (type_        *> ident ) 
-  <|> Spacing     <$> (spacing_     *> double)
-  <|> Direction   <$> (direction_   *> layerDirection)
-  <|> Pitch       <$> (pitch_       *> double)
-  <|> Offset      <$> (offset_      *> double)
-  <|> Width       <$> (width_       *> double)
-  <|> Resistance  <$> (resistance_  *> ident ) <*> double
-  <|> Capacitance <$> (capacitance_ *> ident ) <*> double
-  <|> EdgeCapacitance <$> (capacitance_ *> double)
-  <?> "layer_option"
+endDesign :: Parser ()
+endDesign = end_ *> design_
+  <?> "end_design"
 
-via :: Parser Via
-via = via_ >> Via
-  <$> viaName
-  <*> many viaLayer
-  <*> (end_ *> ident)
-  <?> "via"
-
-viaName :: Parser ViaName
-viaName = ViaName <$> ident <*> ident <?> "via_name"
-
-viaLayer :: Parser ViaLayer
-viaLayer = ViaLayer
-  <$> viaLayerName
-  <*> many viaRect
-  <?> "via_layer"
-
-viaLayerName :: Parser ViaLayerName
-viaLayerName = layer_ *> ident <?> "via_layer_name"
-
-viaRect :: Parser ViaRect
-viaRect = rect_ >> ViaRect
-  <$> double
-  <*> double
-  <*> double
-  <*> double
-  <?> "via_rect"
-
-viaRule :: Parser ViaRule
-viaRule = ViaRule
-  <$> viaRuleName
-  <*> many viaRuleLayer
-  <*> (end_ *> ident)
-  <?> "via_rule"
-
-viaRuleName :: Parser ViaRuleName
-viaRuleName = viarule_ >> ViaRuleName
-  <$> ident
-  <*> ident
-  <?> "via_rule_name"
-
-viaRuleLayer :: Parser ViaRuleLayer
-viaRuleLayer = ViaRuleLayer
-  <$> viaRuleLayerName
-  <*> many viaRuleLayerOption
-  <?> "via_rule_layer"
-
-viaRuleLayerName :: Parser ViaRuleLayerName
-viaRuleLayerName = layer_ *> ident <?> "via_rule_layer_name"
-
-viaRuleLayerOption :: Parser ViaRuleLayerOption
-viaRuleLayerOption
-  =   ViaRuleLayerOptionDirection     <$> (direction_ *> layerDirection)
-  <|> ViaRuleLayerOptionWidth         <$> (width_     *> double) <*> (to_ *> double)
-  <|> ViaRuleLayerOptionSpacing       <$> (spacing_   *> double) <*> (by_ *> double)
-  <|> ViaRuleLayerOptionOverhang      <$> (overhang_  *> double)
-  <|> ViaRuleLayerOptionMetalOverhang <$> (metaloverhang_ *> double)
-  <|> ViaRuleLayerOptionRect          <$> (rect_ *> double) <*> double <*> double <*> double
-  <?> "via_rule_layer_option"
-
-site :: Parser Site
-site = Site
-  <$> siteName
-  <*> many siteOption
-  <*> (end_ *> ident)
-  <?> "site"
-
-siteName :: Parser SiteName
-siteName = site_ *> ident <?> "site_name"
-
-siteOption :: Parser SiteOption
-siteOption
-  =   SiteClass    <$> (class_    *> ident )
-  <|> SiteSymmetry <$> (symmetry_ *> ident ) <*> optional ident
-  <|> SiteSize     <$> (size_     *> double) <*> (by_ *> double)
-  <?> "site_option"
-
-macro :: Parser Macro
-macro = Macro
-  <$> macroName
-  <*> many macroOption
-  <*> (end_ *> ident)
-  <?> "macro"
-
-macroName :: Parser MacroName
-macroName = macro_ *> ident <?> "macro_name"
-
-power :: Parser Power
-power = Power <$ power_ <|> Ground <$ ground_
-
-macroOption :: Parser MacroOption
-macroOption
-  =   MacroClass    <$> (class_    *> ident ) <*> optional ident
-  <|> MacroForeign  <$> (foreign_  *> ident ) <*> double <*> double
-  <|> MacroOrigin   <$> (origin_   *> double) <*> double
-  <|> MacroSize     <$> (size_     *> double) <*> (by_ *> double)
-  <|> MacroSymmetry <$> (symmetry_ *> ident ) <*> optional ident <*> optional ident
-  <|> MacroSite     <$> (site_     *> ident )
-  <|> MacroPin      <$> (pin_ *> ident) <*> many macroPinOption <*> (end_ *> ident)
-  <|> MacroObs      <$> (obs_ *> many macroObsInfo) <* end_
-  <?> "macro_option"
-
-macroObsInfo :: Parser MacroObsInfo
-macroObsInfo
-  =   MacroObsLayer <$> (layer_ *> ident)
-  <|> MacroObsRect  <$> (rect_ *> double) <*> double <*> double <*> double
-  <?> "macro_obs_info"
-
-macroPinOption :: Parser MacroPinOption
-macroPinOption
-  =   MacroPinName      <$> (pin_ *> ident)
-  <|> MacroPinUse       <$> (use_ *> power)
-  <|> MacroPinDirection <$> (direction_ *> portDirection) <*> optional ident
-  <|> MacroPinShape     <$> (shape_ *> ident)
-  <|> MacroPinPort      <$> (port_  *> many macroPinPortInfo) <* end_
-  <?> "macro_pin_option"
-
-macroPinPortInfo :: Parser MacroPinPortInfo
-macroPinPortInfo
-  =   MacroPinPortLayer <$> (layer_ *> ident )
-  <|> MacroPinPortRect  <$> (rect_  *> double) <*> double <*> double <*> double
-  <|> MacroPinPortClass <$> (class_ *> ident )
-  <|> MacroPinPortWidth <$> (width_ *> double)
-  <|> MacroPinPortPath  <$> (path_  *> double) <*> double <*> double <*> double
-  <?> "macro_pin_port_info"
-
-endLibrary :: Parser ()
-endLibrary = end_ *> library_
-
-portDirection :: Parser PortDirection
-portDirection
-  =   InputOutput <$ inout_
-  <|> Output <$ output_
-  <|> Input  <$ input_
-  <?> "port_direction"
-
-layerDirection :: Parser LayerDirection
-layerDirection
-  =   Horizontal <$ horizontal_
-  <|> Vertical   <$ vertical_
-  <?> "layer_direction"
 
 boolean :: Parser Bool
 boolean = True <$ on_ <|> False <$ off_ <?> "boolean"
@@ -280,7 +220,20 @@ stringLiteral = maybeToken q
 
 p :: Token -> Parser ()
 p t = maybeToken $ \r -> if r == t then Just () else Nothing
+net_ = p Tok_Net
+nets_ = p Tok_Nets
+pins_ = p Tok_Pins
+placed_ = p Tok_Placed
+plus_ = p Tok_Plus
+minus_ = p Tok_Minus
+components_ = p Tok_Components
+tracks_ = p Tok_Tracks
+do_ = p Tok_Do
+step_ = p Tok_Step
+diearea_ = p Tok_Diearea
 end_ = p Tok_End
+lparen_ = p Tok_Lparen
+rparen_ = p Tok_Rparen
 library_ = p Tok_Library
 version_ = p Tok_Version
 capacitance_ = p Tok_Capacitance
@@ -293,9 +246,10 @@ spacing_ = p Tok_Spacing
 type_ = p Tok_Type
 layer_ = p Tok_Layer
 units_ = p Tok_Units
+design_ = p Tok_Design
 dividerchar_ = p Tok_DividerChar
 microns_ = p Tok_Microns
-database_ = p Tok_Database
+distance_ = p Tok_Distance
 busbitchars_ = p Tok_BusBitChars
 namescasesensitive_ = p Tok_Namescasesensitive
 pin_ = p Tok_Pin

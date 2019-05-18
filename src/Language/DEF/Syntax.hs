@@ -5,132 +5,63 @@ import Data.Text (Text)
 
 type Ident = Text
 
-data DEF = DEF [Option] [Layer] [Via] [ViaRule] [Site] [Macro]
+data DEF = DEF [Option] DieArea [Track] [Component] [Pin] [Net]
   deriving (Eq, Show)
 
 data Option
   = Version Double
   | Cases Bool
+  | Design Ident
   | BitChars Ident
   | DivideChar Ident
-  | Units DatabaseList
+  | Units DistanceList
   | UseMinSpacing Bool
   | ClearanceMeasure Ident
   | ManufacturingGrid Double
   deriving (Eq, Show)
 
-newtype DatabaseList = DatabaseList Integer
+newtype DistanceList = DistanceList Integer
   deriving (Eq, Show)
 
-data Layer = Layer LayerName [LayerOption] Text
+
+data DieArea = DieArea (Double, Double) (Double, Double)
   deriving (Eq, Show)
+
+
+data Track = Track XY Double Integer Double LayerName
+  deriving (Eq, Show)
+
+type XY = Ident
+
+
+data Component = Component Ident Ident (Maybe Placed)
+  deriving (Eq, Show)
+
+
+data Placed = Placed (Double, Double) Ori
+  deriving (Eq, Show)
+
+type Ori = Ident
+
+
+data Pin = Pin Ident (Maybe Ident) (Maybe Layer) (Maybe Placed)
+  deriving (Eq, Show)
+
+
+data Layer = Layer LayerName (Integer, Integer) (Integer, Integer)
+  deriving (Eq, Show)
+
+
+data Net = Net Ident [Contact]
+  deriving (Eq, Show)
+
+
+type Contact = Either Ident (Ident, Ident)
+
 
 type LayerName = Ident
 
-data LayerOption
-  = Type Ident
-  | Spacing Double
-  | Direction LayerDirection
-  | Pitch Double
-  | Offset Double
-  | Width Double
-  | Resistance Ident Double
-  | Capacitance Ident Double
-  | EdgeCapacitance Double
-  deriving (Eq, Show)
 
 data PortDirection = Input | Output | InputOutput
   deriving (Eq, Show)
-
-data LayerDirection = Horizontal | Vertical
-  deriving (Eq, Show)
-
-data Via = Via ViaName [ViaLayer] Ident
-  deriving (Eq, Show)
-
-data ViaName = ViaName Ident Ident
-  deriving (Eq, Show)
-
-data ViaLayer = ViaLayer ViaLayerName [ViaRect]
-  deriving (Eq, Show)
-
-type ViaLayerName = Ident
-
-data ViaRect = ViaRect Double Double Double Double
-  deriving (Eq, Show)
-
-data ViaRule = ViaRule ViaRuleName [ViaRuleLayer] Ident
-  deriving (Eq, Show)
-
-data ViaRuleName = ViaRuleName Ident Ident
-  deriving (Eq, Show)
-
-data ViaRuleLayer = ViaRuleLayer ViaRuleLayerName [ViaRuleLayerOption]
-  deriving (Eq, Show)
-
-type ViaRuleLayerName = Ident
-
-data ViaRuleLayerOption
-  = ViaRuleLayerOptionDirection LayerDirection
-  | ViaRuleLayerOptionWidth Double Double
-  | ViaRuleLayerOptionWidthDiscrete Double Integer
-  | ViaRuleLayerOptionOverhang Double
-  | ViaRuleLayerOptionOverhangDiscrete Integer
-  | ViaRuleLayerOptionMetalOverhang Double
-  | ViaRuleLayerOptionMetalOverhangDiscrete Integer
-  | ViaRuleLayerOptionRect Double Double Double Double
-  | ViaRuleLayerOptionSpacing Double Double
-  deriving (Eq, Show)
-
-data Site = Site SiteName [SiteOption] Ident
-  deriving (Eq, Show)
-
-type SiteName = Ident
-
-data SiteOption
-  = SiteClass Ident
-  | SiteSymmetry Ident (Maybe Ident)
-  | SiteSize Double Double
-  deriving (Eq, Show)
-
-data Macro = Macro MacroName [MacroOption] Ident
-  deriving (Eq, Show)
-
-type MacroName = Ident
-
-data Power = Power | Ground
-  deriving (Eq, Show)
-
-data MacroOption
-  = MacroClass Ident (Maybe Ident)
-  | MacroForeign Ident Double Double
-  | MacroOrigin Double Double
-  | MacroSize Double Double
-  | MacroSymmetry Ident (Maybe Ident) (Maybe Ident)
-  | MacroSite Ident
-  | MacroPin Ident [MacroPinOption] Ident
-  | MacroObs [MacroObsInfo]
-  deriving (Eq, Show)
-
-data MacroPinOption
-  = MacroPinName Ident
-  | MacroPinUse Power
-  | MacroPinDirection PortDirection (Maybe Ident)
-  | MacroPinShape Ident
-  | MacroPinPort [MacroPinPortInfo]
-  deriving (Eq, Show)
-
-data MacroPinPortInfo
-  = MacroPinPortLayer Ident
-  | MacroPinPortRect Double Double Double Double
-  | MacroPinPortClass Ident
-  | MacroPinPortWidth Double
-  | MacroPinPortPath Double Double Double Double
-  deriving (Eq, Show)
-
-data MacroObsInfo
-  = MacroObsLayer Ident
-  | MacroObsRect Double Double Double Double
-  deriving (Eq, Show)
-
 

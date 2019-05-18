@@ -25,7 +25,7 @@ $any     = [.\n\r]
 -- start with a letter or an underscore, but can then also contain
 -- characters from the classes Mn, Mc, Nd, Pc or Cf.
 $ident_start = [a-zA-Z_\@]
-$ident_part  = [a-zA-Z_0-9]
+$ident_part  = [a-zA-Z_0-9\<\>\$\_]
 $const_part  = [A-Z_]
 
 $digit     = [0-9]
@@ -56,7 +56,25 @@ $white+       ;
 -- T.T
 \; ;
 
+
+\(             { constTok Tok_Lparen    }
+\)             { constTok Tok_Rparen    }
+
+\-             { constTok Tok_Minus     }
+\+             { constTok Tok_Plus      }
+
+
 -- Keywords
+NET                { constTok Tok_Net      }
+NETS               { constTok Tok_Nets      }
+PINS               { constTok Tok_Pins      }
+PLACED             { constTok Tok_Placed    }
+COMPONENTS         { constTok Tok_Components }
+TRACKS             { constTok Tok_Tracks    }
+DO                 { constTok Tok_Do        }
+STEP               { constTok Tok_Step      }
+DIEAREA            { constTok Tok_Diearea   }
+DESIGN             { constTok Tok_Design    }
 END                { constTok Tok_End       }
 LIBRARY            { constTok Tok_Library   }
 VERSION            { constTok Tok_Version   }
@@ -64,7 +82,7 @@ NAMESCASESENSITIVE { constTok Tok_Namescasesensitive }
 BUSBITCHARS        { constTok Tok_BusBitChars }
 DIVIDERCHAR        { constTok Tok_DividerChar }
 UNITS              { constTok Tok_Units       }
-DATABASE           { constTok Tok_Database    }
+DISTANCE           { constTok Tok_Distance    }
 ON                 { constTok Tok_On          }
 OFF                { constTok Tok_Off         }
 MICRONS	           { constTok Tok_Microns     }

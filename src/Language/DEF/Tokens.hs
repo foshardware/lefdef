@@ -15,13 +15,27 @@ type Pos = (Int, Int)
 data Token
     -- Keywords
     = Tok_End
+    | Tok_Net
+    | Tok_Nets
+    | Tok_Pins
+    | Tok_Plus
+    | Tok_Placed
+    | Tok_Components
+    | Tok_Minus
+    | Tok_Tracks
+    | Tok_Do
+    | Tok_Step
+    | Tok_Diearea
     | Tok_Library
+    | Tok_Lparen
+    | Tok_Rparen
     | Tok_Version
     | Tok_Namescasesensitive
     | Tok_BusBitChars
     | Tok_DividerChar
     | Tok_Units
-    | Tok_Database
+    | Tok_Design
+    | Tok_Distance
     | Tok_Microns
     | Tok_Obs
     | Tok_Pin

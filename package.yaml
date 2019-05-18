@@ -10,7 +10,7 @@ extra-source-files:
 - README.md
 - ChangeLog.md
 
-description:         Please see the README on GitHub at <https://github.com/foshardware/lef#readme>
+description:         Please see the README on GitHub at <https://github.com/foshardware/def#readme>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -21,3 +21,19 @@ dependencies:
 
 library:
   source-dirs: src
+
+tests:
+  def-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -Wall
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - def
+    - tasty
+    - tasty-hunit
+    - tasty-quickcheck
+    - file-embed
