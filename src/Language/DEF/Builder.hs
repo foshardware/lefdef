@@ -2,7 +2,9 @@
 
 module Language.DEF.Builder where
 
+import Data.Foldable
 import Data.Text.Lazy hiding (length)
+import Data.Text.Lazy.IO as Text
 import Data.Text.Lazy.Builder
 import Data.Text.Lazy.Builder.Int
 import Data.Text.Lazy.Builder.RealFloat
@@ -10,9 +12,26 @@ import Data.Text.Lazy.Builder.RealFloat
 import Language.DEF.Syntax
 
 
-buildDEF :: DEF -> Text 
-buildDEF (DEF options area tracks components pins nets) = toLazyText
-   $ foldMap optionStatement options
+
+defaultOptions :: Maybe Ident -> [Option]
+defaultOptions ident =
+  [ Version 5.6
+  , Cases True
+  , DivideChar "/"
+  , BitChars "<>"
+  ] ++
+  [ Design i | i <- toList ident ] ++
+  [ Units $ DistanceList 100 ]
+
+
+
+printDEF :: DEF -> IO ()
+printDEF = Text.putStr . toLazyText . builderDEF
+
+
+builderDEF :: DEF -> Builder
+builderDEF (DEF options area tracks components pins nets)
+   = foldMap optionStatement options
   <> newline
   <> dieAreaStatement area
   <> newline

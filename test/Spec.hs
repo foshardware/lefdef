@@ -3,6 +3,7 @@
 import Data.FileEmbed
 import Data.Text hiding (unpack)
 import Data.Text.Lazy (fromStrict, unpack)
+import Data.Text.Lazy.Builder
 import Data.Text.Encoding
 
 import Test.Tasty
@@ -29,9 +30,8 @@ map9v3 = testGroup "map9v3"
 testBuildDEF :: IO ()
 testBuildDEF = do
     def_ <- either (error . show) pure (parseDEF map9v3Def)
-    let str = unpack $ buildDEF def_
-    writeFile "out" str
-    assertBool str $ buildDEF def_ == fromStrict map9v3Def
+    let str = toLazyText $ builderDEF def_
+    assertBool (unpack str) $ str == fromStrict map9v3Def
 
 
 map9v3Def :: Text
