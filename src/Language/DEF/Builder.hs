@@ -3,7 +3,7 @@
 module Language.DEF.Builder where
 
 import Data.Foldable
-import Data.Text.Lazy hiding (length)
+import Data.Text.Lazy hiding (length, null)
 import Data.Text.Lazy.IO as Text
 import Data.Text.Lazy.Builder
 import Data.Text.Lazy.Builder.Int
@@ -30,7 +30,7 @@ printDEF = Text.putStr . toLazyText . builderDEF
 
 
 builderDEF :: DEF -> Builder
-builderDEF (DEF options area tracks components pins nets)
+builderDEF (DEF options area tracks components pins nets specialnets)
    = foldMap optionStatement options
   <> newline
   <> dieAreaStatement area
@@ -49,6 +49,12 @@ builderDEF (DEF options area tracks components pins nets)
   <> foldMap netStatement nets
   <> "END NETS" <> newline
   <> newline
+  <> (if null specialnets then mempty else
+     "SPECIALNETS " <> decimal (length specialnets) <> " ;" <> newline
+  <> foldMap specialnetStatement specialnets
+  <> "END SPECIALNETS" <> newline
+  <> newline)
+
   <> "END DESIGN"
   <> newline
 
@@ -106,9 +112,9 @@ placedExpression (Placed (x, y) o)
 pinStatement :: Pin -> Builder
 pinStatement (Pin a net layer placed)
   = "- " <> fromText a
-  <> maybe mempty (mappend " + NET " . fromText) net
-  <> maybe mempty (mappend (newline <> "  + ") . layerExpression) layer
-  <> maybe mempty (mappend (newline <> "  + ") . placedExpression) placed
+  <> foldMap (mappend " + NET " . fromText) net
+  <> foldMap (mappend (newline <> "  + ") . layerExpression) layer
+  <> foldMap (mappend (newline <> "  + ") . placedExpression) placed
   <> " ;" <> newline
 
 
@@ -121,12 +127,38 @@ layerExpression (Layer l (x1, y1) (x2, y2))
 
 
 netStatement :: Net -> Builder
-netStatement (Net n cs)
+netStatement (Net n cs rt)
    = "- " <> fromText n
   <> mconcat [ newline <> "  ( " <> either p q c <> " )" | c <- cs ]
+  <> foldMap (mappend (newline <> "+ ") . routedExpression) rt
   <> " ;" <> newline
   where p = mappend "PIN " . fromText
         q (x, y) = fromText x <> " " <> fromText y
+
+
+specialnetStatement :: Specialnet -> Builder
+specialnetStatement (Specialnet n rt)
+   = "- " <> fromText n
+  <> foldMap (mappend (newline <> "+ ") . routedExpression) rt
+  <> " ;" <> newline
+  where p = mappend "PIN " . fromText
+        q (x, y) = fromText x <> " " <> fromText y
+
+
+routedExpression :: Routed -> Builder
+routedExpression (Routed (x : xs))
+   = "ROUTED " <> segExpression x
+  <> foldMap (mappend (newline <> "  NEW ") . segExpression) xs
+routedExpression _ = mempty
+
+
+segExpression :: Segment Integer -> Builder
+segExpression (Seg l n (x1, y1) xs i)
+   = fromText l
+  <> foldMap (mappend " " . decimal) n
+  <> " ( " <> decimal x1 <> " " <> decimal y1 <> " )"
+  <> foldMap (\ (x2, y2) -> " ( " <> maybe "*" decimal x2 <> " " <> maybe "*" decimal y2 <> " )") xs
+  <> foldMap (mappend " " . fromText) i
 
 
 newline :: Builder

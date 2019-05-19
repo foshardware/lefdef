@@ -15,6 +15,10 @@ type Pos = (Int, Int)
 data Token
     -- Keywords
     = Tok_End
+    | Tok_Specialnets
+    | Tok_Routed
+    | Tok_Star
+    | Tok_New
     | Tok_Net
     | Tok_Nets
     | Tok_Pins

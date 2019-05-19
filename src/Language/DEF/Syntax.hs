@@ -5,7 +5,7 @@ import Data.Text (Text)
 
 type Ident = Text
 
-data DEF = DEF [Option] DieArea [Track] [Component] [Pin] [Net]
+data DEF = DEF [Option] DieArea [Track] [Component] [Pin] [Net] [Specialnet]
   deriving (Eq, Show)
 
 data Option
@@ -38,10 +38,10 @@ data Component = Component Ident Ident (Maybe Placed)
   deriving (Eq, Show)
 
 
-data Placed = Placed (Double, Double) Ori
+data Placed = Placed (Double, Double) Orient
   deriving (Eq, Show)
 
-type Ori = Ident
+type Orient = Ident
 
 
 data Pin = Pin Ident (Maybe Ident) (Maybe Layer) (Maybe Placed)
@@ -52,11 +52,23 @@ data Layer = Layer LayerName (Integer, Integer) (Integer, Integer)
   deriving (Eq, Show)
 
 
-data Net = Net Ident [Contact]
+data Net = Net Ident [Contact] (Maybe Routed)
+  deriving (Eq, Show)
+
+
+data Specialnet = Specialnet Ident (Maybe Routed)
   deriving (Eq, Show)
 
 
 type Contact = Either Ident (Ident, Ident)
+
+
+data Routed = Routed [Segment Integer]
+  deriving (Eq, Show)
+
+
+data Segment a = Seg LayerName (Maybe a) (a, a) [(Maybe a, Maybe a)] (Maybe Ident)
+  deriving (Eq, Show)
 
 
 type LayerName = Ident

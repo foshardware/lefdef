@@ -4,6 +4,7 @@ module Language.DEF.Parser where
 
 import Control.Applicative (optional)
 import Control.Monad
+import Data.Foldable
 import Data.Text (Text)
 import qualified Data.Text as T
 import Text.Parsec hiding (option, optional)
@@ -17,10 +18,13 @@ import Language.DEF.Lexer
 import Language.DEF.Syntax
 
 
+
 type Parser = GenParser (Lexer Token) ()
+
 
 parseDEF :: Text -> Either ParseError DEF
 parseDEF = parse def [] . lexer []
+
 
 def :: Parser DEF
 def = DEF
@@ -30,6 +34,7 @@ def = DEF
   <*> components
   <*> pins
   <*> nets
+  <*> (join . toList <$> optional specialnets)
   <*  endDesign
   <?> "def"
 
@@ -76,12 +81,12 @@ component = Component
 placed :: Parser Placed
 placed = placed_ >> Placed
   <$> tuple double
-  <*> ori
+  <*> orientation
   <?> "placed"
 
 
-ori :: Parser Ori
-ori = ident <?> "ori"
+orientation :: Parser Orient
+orientation = ident <?> "ori"
 
 
 pins :: Parser [Pin]
@@ -111,11 +116,24 @@ nets = nets_ *> integer *> minus_ *> sepBy1 net minus_ <* end_ <* nets_
   <?> "nets"
 
 
+specialnets :: Parser [Specialnet]
+specialnets = specialnets_ *> integer *> minus_ *> sepBy1 specialnet minus_ <* end_ <* specialnets_
+  <?> "specialnets"
+
+
 net :: Parser Net
 net = Net
   <$> ident
   <*> many1 (lparen_ *> contact <* rparen_)
+  <*> (optional plus_ *> optional routed)
   <?> "net"
+
+
+specialnet :: Parser Specialnet
+specialnet = Specialnet
+  <$> ident
+  <*> (optional plus_ *> optional routed) 
+  <?> "specialnet"
 
 
 contact :: Parser Contact
@@ -123,6 +141,22 @@ contact
   =   Left  <$> (pin_ *> ident)
   <|> Right <$> ((,) <$> ident <*> ident)
   <?> "contact"
+
+
+routed :: Parser Routed
+routed = routed_ >> Routed
+  <$> sepBy1 segment new_
+  <?> "routed"
+
+
+segment :: Parser (Segment Integer)
+segment = Seg
+  <$> ident
+  <*> optional integer
+  <*> tuple integer
+  <*> many (tuple (Nothing <$ star_ <|> Just <$> integer))
+  <*> optional ident 
+  <?> "segment"
 
 
 option :: Parser Option
@@ -220,6 +254,10 @@ stringLiteral = maybeToken q
 
 p :: Token -> Parser ()
 p t = maybeToken $ \r -> if r == t then Just () else Nothing
+specialnets_ = p Tok_Specialnets
+routed_ = p Tok_Routed
+star_ = p Tok_Star
+new_ = p Tok_New
 net_ = p Tok_Net
 nets_ = p Tok_Nets
 pins_ = p Tok_Pins

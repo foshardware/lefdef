@@ -20,10 +20,6 @@ $any     = [.\n\r]
 
 @preprocessor = \# .* @newline
 
--- C# actually defines a letter to be any character (or escape sequence)
--- from the Unicode classes Lu, Ll, Lt, Lm, Lo or Nl. Identifiers must
--- start with a letter or an underscore, but can then also contain
--- characters from the classes Mn, Mc, Nd, Pc or Cf.
 $ident_start = [a-zA-Z_\@]
 $ident_part  = [a-zA-Z_0-9\<\>\$\_]
 $const_part  = [A-Z_]
@@ -63,8 +59,13 @@ $white+       ;
 \-             { constTok Tok_Minus     }
 \+             { constTok Tok_Plus      }
 
+\*             { constTok Tok_Star      }
+
 
 -- Keywords
+SPECIALNETS        { constTok Tok_Specialnets }
+ROUTED             { constTok Tok_Routed   }
+NEW                { constTok Tok_New      }
 NET                { constTok Tok_Net      }
 NETS               { constTok Tok_Nets      }
 PINS               { constTok Tok_Pins      }
