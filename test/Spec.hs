@@ -39,6 +39,7 @@ testBuildDEF :: Text -> IO ()
 testBuildDEF text = do
     def_ <- either (error . show) pure (parseDEF text)
     let str = toLazyText $ builderDEF def_
+    writeFile "out" $ unpack str
     assertBool (unpack str) $ str == fromStrict text
 
 
