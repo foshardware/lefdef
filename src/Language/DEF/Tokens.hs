@@ -21,6 +21,7 @@ data Token
     | Tok_New
     | Tok_Net
     | Tok_Nets
+    | Tok_Row
     | Tok_Pins
     | Tok_Plus
     | Tok_Placed

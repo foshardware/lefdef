@@ -73,6 +73,8 @@ PLACED             { constTok Tok_Placed    }
 COMPONENTS         { constTok Tok_Components }
 TRACKS             { constTok Tok_Tracks    }
 DO                 { constTok Tok_Do        }
+BY                 { constTok Tok_By        }
+ROW                { constTok Tok_Row       }
 STEP               { constTok Tok_Step      }
 DIEAREA            { constTok Tok_Diearea   }
 DESIGN             { constTok Tok_Design    }

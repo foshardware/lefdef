@@ -30,6 +30,7 @@ def :: Parser DEF
 def = DEF
   <$> many1 option
   <*> dieArea
+  <*> many row
   <*> many track
   <*> components
   <*> pins
@@ -49,6 +50,20 @@ dieArea = diearea_ >> DieArea
 tuple :: Parser a -> Parser (a, a)
 tuple f = between lparen_ rparen_ ((,) <$> f <*> f) 
   <?> "tuple"
+
+
+row :: Parser Row
+row = row_ >> Row
+  <$> ident
+  <*> ident
+  <*> integer
+  <*> integer
+  <*> orientation
+  <*> (do_ *> integer)
+  <*> (by_ *> integer)
+  <*> (step_ *> integer)
+  <*> integer
+  <?> "row"
 
 
 track :: Parser Track
@@ -260,6 +275,7 @@ star_ = p Tok_Star
 new_ = p Tok_New
 net_ = p Tok_Net
 nets_ = p Tok_Nets
+row_ = p Tok_Row
 pins_ = p Tok_Pins
 placed_ = p Tok_Placed
 plus_ = p Tok_Plus

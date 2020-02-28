@@ -5,7 +5,7 @@ import Data.Text (Text)
 
 type Ident = Text
 
-data DEF = DEF [Option] DieArea [Track] [Component] [Pin] [Net] [Specialnet]
+data DEF = DEF [Option] DieArea [Row] [Track] [Component] [Pin] [Net] [Specialnet]
   deriving (Eq, Show)
 
 data Option
@@ -28,6 +28,9 @@ data DieArea = DieArea (Double, Double) (Double, Double)
   deriving (Eq, Show)
 
 
+data Row = Row Ident Ident Integer Integer Orient Integer Integer Integer Integer
+  deriving (Eq, Show)
+
 data Track = Track XY Double Integer Double LayerName
   deriving (Eq, Show)
 
@@ -38,7 +41,9 @@ data Component = Component Ident Ident (Maybe Placed)
   deriving (Eq, Show)
 
 
-data Placed = Placed (Double, Double) Orient
+data Placed
+  = Unplaced
+  | Placed (Double, Double) Orient
   deriving (Eq, Show)
 
 type Orient = Ident

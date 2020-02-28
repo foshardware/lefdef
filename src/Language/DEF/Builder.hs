@@ -30,7 +30,7 @@ printDEF = Text.putStr . toLazyText . builderDEF
 
 
 builderDEF :: DEF -> Builder
-builderDEF (DEF options area tracks components pins nets specialnets)
+builderDEF (DEF options area _ tracks components pins nets specialnets)
    = foldMap optionStatement options
   <> newline
   <> dieAreaStatement area
@@ -106,6 +106,8 @@ componentStatement (Component a b (Just placed))
 placedExpression :: Placed -> Builder
 placedExpression (Placed (x, y) o)
   = "PLACED" <> " ( " <> realFloat x <> " " <> realFloat y <> " ) " <> fromText o
+placedExpression Unplaced
+  = "UNPLACED"
 
 
 
