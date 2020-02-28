@@ -18,6 +18,7 @@ main :: IO ()
 main = defaultMain $ testGroup "DEF"
   [ map9v3
   , map9v3_route
+  , gcd_nan45_nontd
   ]
 
 
@@ -35,6 +36,13 @@ map9v3_route = testGroup "map9v3_route"
   ]
 
 
+gcd_nan45_nontd :: TestTree
+gcd_nan45_nontd = testGroup "gcd_nan45_nontd_def"
+  [ testCase "Parse DEF" $ either (error . show) (pure . const ()) (parseDEF gcd_nan45_nontd_def)
+  -- , testCase "Build DEF" $ testBuildDEF gcd_nan45_nontd_def
+  ]
+
+
 testBuildDEF :: Text -> IO ()
 testBuildDEF text = do
     def_ <- either (error . show) pure (parseDEF text)
@@ -48,5 +56,6 @@ map9v3_def = decodeUtf8 $(embedFile "sample/map9v3.def")
 map9v3_route_def :: Text
 map9v3_route_def = decodeUtf8 $(embedFile "sample/map9v3_route.def")
 
-
+gcd_nan45_nontd_def :: Text
+gcd_nan45_nontd_def = decodeUtf8 $(embedFile "sample/gcd_nan45_nontd.def")
 

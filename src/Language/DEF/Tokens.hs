@@ -24,7 +24,11 @@ data Token
     | Tok_Row
     | Tok_Pins
     | Tok_Plus
+    | Tok_Fixed
     | Tok_Placed
+    | Tok_Source
+    | Tok_Signal
+    | Tok_Dist
     | Tok_Components
     | Tok_Minus
     | Tok_Tracks

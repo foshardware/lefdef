@@ -112,7 +112,7 @@ placedExpression Unplaced
 
 
 pinStatement :: Pin -> Builder
-pinStatement (Pin a net layer placed)
+pinStatement (Pin a net _ layer placed)
   = "- " <> fromText a
   <> foldMap (mappend " + NET " . fromText) net
   <> foldMap (mappend (newline <> "  + ") . layerExpression) layer

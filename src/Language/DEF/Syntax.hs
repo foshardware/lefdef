@@ -49,7 +49,7 @@ data Placed
 type Orient = Ident
 
 
-data Pin = Pin Ident (Maybe Ident) (Maybe Layer) (Maybe Placed)
+data Pin = Pin Ident (Maybe Ident) (Maybe Direction) (Maybe Layer) (Maybe Placed)
   deriving (Eq, Show)
 
 
@@ -79,6 +79,6 @@ data Segment a = Seg LayerName (Maybe a) (a, a) [(Maybe a, Maybe a)] (Maybe Iden
 type LayerName = Ident
 
 
-data PortDirection = Input | Output | InputOutput
+data Direction = Input | Output | InputOutput
   deriving (Eq, Show)
 

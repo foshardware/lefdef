@@ -21,7 +21,7 @@ $any     = [.\n\r]
 @preprocessor = \# .* @newline
 
 $ident_start = [a-zA-Z_\@]
-$ident_part  = [a-zA-Z_0-9\<\>\$\_]
+$ident_part  = [a-zA-Z_0-9\<\>\$\_\\\[\]\.]
 $const_part  = [A-Z_]
 
 $digit     = [0-9]
@@ -72,6 +72,10 @@ PINS               { constTok Tok_Pins      }
 PLACED             { constTok Tok_Placed    }
 COMPONENTS         { constTok Tok_Components }
 TRACKS             { constTok Tok_Tracks    }
+FIXED              { constTok Tok_Fixed     }
+SOURCE             { constTok Tok_Source    }
+SIGNAL             { constTok Tok_Signal    }
+DIST               { constTok Tok_Dist      }
 DO                 { constTok Tok_Do        }
 BY                 { constTok Tok_By        }
 ROW                { constTok Tok_Row       }

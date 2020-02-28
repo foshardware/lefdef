@@ -90,11 +90,12 @@ component = Component
   <$> ident
   <*> ident
   <*> optional (plus_ *> placed)
+  <*  optional (plus_ *> source_ *> dist_)
   <?> "component"
 
 
 placed :: Parser Placed
-placed = placed_ >> Placed
+placed = (placed_ <|> fixed_) >> Placed
   <$> tuple double
   <*> orientation
   <?> "placed"
@@ -121,9 +122,14 @@ pin :: Parser Pin
 pin = Pin
   <$> ident
   <*> (optional plus_ *> optional (net_ *> ident))
+  <*> (optional plus_ *> optional direction <* optional plus_ <* optional use_ <* optional signal_)
   <*> (optional plus_ *> optional layer)
   <*> (optional plus_ *> optional placed)
   <?> "pin"
+
+
+direction :: Parser Direction
+direction = direction_ >> (Input <$ input_ <|> Output <$ output_)
 
 
 nets :: Parser [Net]
@@ -278,7 +284,10 @@ nets_ = p Tok_Nets
 row_ = p Tok_Row
 pins_ = p Tok_Pins
 placed_ = p Tok_Placed
+fixed_ = p Tok_Fixed
 plus_ = p Tok_Plus
+source_ = p Tok_Source
+dist_ = p Tok_Dist
 minus_ = p Tok_Minus
 components_ = p Tok_Components
 tracks_ = p Tok_Tracks
@@ -297,6 +306,7 @@ offset_ = p Tok_Offset
 pitch_ = p Tok_Pitch
 direction_ = p Tok_Direction
 spacing_ = p Tok_Spacing
+signal_ = p Tok_Signal
 type_ = p Tok_Type
 layer_ = p Tok_Layer
 units_ = p Tok_Units
