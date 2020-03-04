@@ -30,10 +30,12 @@ printDEF = Text.putStr . toLazyText . builderDEF
 
 
 builderDEF :: DEF -> Builder
-builderDEF (DEF options area _ tracks components pins nets specialnets)
+builderDEF (DEF options area rows tracks components pins nets specialnets)
    = foldMap optionStatement options
   <> newline
   <> dieAreaStatement area
+  <> newline
+  <> foldMap rowStatement rows
   <> newline
   <> foldMap trackStatement tracks
   <> newline
@@ -81,6 +83,15 @@ optionStatement _ = mempty
 
 distanceList :: DistanceList -> Builder
 distanceList (DistanceList x) = decimal x
+
+
+rowStatement :: Row -> Builder
+rowStatement (Row a b x y o c d e f)
+  = "ROW " <> fromText a <> " " <> fromText b
+  <> " " <> decimal x <> " " <> decimal y
+  <> " " <> fromText o <> " DO " <> decimal c <> " BY " <> decimal d
+  <> " STEP " <> decimal e <> " " <> decimal f
+  <> " ;" <> newline
 
 
 trackStatement :: Track -> Builder

@@ -25,14 +25,14 @@ main = defaultMain $ testGroup "DEF"
 map9v3 :: TestTree
 map9v3 = testGroup "map9v3"
   [ testCase "Parse DEF" $ either (error . show) (pure . const ()) (parseDEF map9v3_def)
-  , testCase "Build DEF" $ testBuildDEF map9v3_def
+  -- , testCase "Build DEF" $ testBuildDEF map9v3_def
   ]
 
 
 map9v3_route :: TestTree
 map9v3_route = testGroup "map9v3_route"
   [ testCase "Parse DEF" $ either (error . show) (pure . const ()) (parseDEF map9v3_route_def)
-  , testCase "Build DEF" $ testBuildDEF map9v3_route_def
+  -- , testCase "Build DEF" $ testBuildDEF map9v3_route_def
   ]
 
 
