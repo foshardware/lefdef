@@ -7,7 +7,7 @@ import Data.Text.Lazy hiding (length, null)
 import Data.Text.Lazy.IO as Text
 import Data.Text.Lazy.Builder
 import Data.Text.Lazy.Builder.Int
-import Data.Text.Lazy.Builder.RealFloat
+import Data.Text.Lazy.Builder.RealFloat hiding (Fixed)
 
 import Language.DEF.Syntax
 
@@ -106,6 +106,8 @@ componentStatement (Component a b (Just placed))
 placedExpression :: Placed -> Builder
 placedExpression (Placed (x, y) o)
   = "PLACED" <> " ( " <> realFloat x <> " " <> realFloat y <> " ) " <> fromText o
+placedExpression (Fixed (x, y) o)
+  = "FIXED" <> " ( " <> realFloat x <> " " <> realFloat y <> " ) " <> fromText o
 placedExpression Unplaced
   = "UNPLACED"
 

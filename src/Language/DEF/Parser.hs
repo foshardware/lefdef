@@ -95,9 +95,13 @@ component = Component
 
 
 placed :: Parser Placed
-placed = (placed_ <|> fixed_) >> Placed
-  <$> tuple double
-  <*> orientation
+placed
+  =   (placed_ >> Placed
+      <$> tuple double
+      <*> orientation)
+  <|> (fixed_ >> Fixed
+      <$> tuple double
+      <*> orientation)
   <?> "placed"
 
 

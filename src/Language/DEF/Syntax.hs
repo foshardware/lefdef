@@ -44,6 +44,7 @@ data Component = Component Ident Ident (Maybe Placed)
 data Placed
   = Unplaced
   | Placed (Double, Double) Orient
+  | Fixed (Double, Double) Orient
   deriving (Eq, Show)
 
 type Orient = Ident
