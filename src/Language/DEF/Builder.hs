@@ -125,12 +125,19 @@ placedExpression Unplaced
 
 
 pinStatement :: Pin -> Builder
-pinStatement (Pin a net _ layer placed)
+pinStatement (Pin a net dir layer placed)
   = "- " <> fromText a
   <> foldMap (mappend " + NET " . fromText) net
+  <> foldMap (mappend " + " . directionExpression) dir
   <> foldMap (mappend (newline <> "  + ") . layerExpression) layer
   <> foldMap (mappend (newline <> "  + ") . placedExpression) placed
   <> " ;" <> newline
+
+
+directionExpression :: Direction -> Builder
+directionExpression Input  = "DIRECTION INPUT"
+directionExpression Output = "DIRECTION OUTPUT"
+directionExpression InputOutput = "DIRECTION INOUT"
 
 
 layerExpression :: Layer -> Builder
