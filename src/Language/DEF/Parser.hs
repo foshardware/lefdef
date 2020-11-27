@@ -12,7 +12,7 @@ import Text.Parsec.String (GenParser)
 import Text.Parsec.Pos
 import Prelude hiding (null)
 
-import Text.ParserCombinators.Parsec.Number (floating3, int, sign)
+import Text.Parsec.Number (floating3, int, sign)
 
 import Language.DEF.Lexer
 import Language.DEF.Syntax
@@ -249,10 +249,10 @@ boolean :: Parser Bool
 boolean = True <$ on_ <|> False <$ off_ <?> "boolean"
 
 double :: Parser Double
-double = either (fail . show) pure . parse (sign <*> floating3 False) "double" . T.unpack =<< number
+double = either (fail . show) pure . parse (sign <*> floating3 False) "double" =<< number
 
 integer :: Parser Integer
-integer = either (fail . show) pure . parse int "integer" . T.unpack =<< number
+integer = either (fail . show) pure . parse int "integer" =<< number
 
 maybeToken :: (Token -> Maybe a) -> Parser a
 maybeToken test = token showT posT testT
