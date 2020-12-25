@@ -38,3 +38,12 @@ main = do
     Right def -> Lazy.putStr $ toLazyText $ builderDEF def
   
 ```
+
+## Tests
+
+```bash
+
+git submodule update --init --recursive
+stack test
+
+```

@@ -30,8 +30,10 @@ printDEF = Text.putStr . toLazyText . builderDEF
 
 
 builderDEF :: DEF -> Builder
-builderDEF (DEF options area rows tracks components pins nets specialnets)
+builderDEF (DEF options histories area rows tracks gcellgrids vias components pins nets specialnets)
    = foldMap optionStatement options
+  <> newline
+  <> foldMap historyStatement histories
   <> newline
   <> dieAreaStatement area
   <> newline
@@ -39,6 +41,15 @@ builderDEF (DEF options area rows tracks components pins nets specialnets)
   <> newline
   <> foldMap trackStatement tracks
   <> newline
+  <> foldMap gcellgridStatement gcellgrids
+  <> newline
+
+  <> (if null vias then mempty else
+     "VIAS " <> decimal (length vias) <> " ;" <> newline
+  <> foldMap viaStatement vias
+  <> "END VIAS" <> newline
+  <> newline)
+
   <> "COMPONENTS " <> decimal (length components) <> " ;" <> newline
   <> foldMap componentStatement components
   <> "END COMPONENTS" <> newline
@@ -51,6 +62,7 @@ builderDEF (DEF options area rows tracks components pins nets specialnets)
   <> foldMap netStatement nets
   <> "END NETS" <> newline
   <> newline
+
   <> (if null specialnets then mempty else
      "SPECIALNETS " <> decimal (length specialnets) <> " ;" <> newline
   <> foldMap specialnetStatement specialnets
@@ -59,6 +71,13 @@ builderDEF (DEF options area rows tracks components pins nets specialnets)
 
   <> "END DESIGN"
   <> newline
+
+
+historyStatement :: History -> Builder
+historyStatement (History string)
+   = "HISTORY"
+  <> fromText string
+  <> " ;" <> newline
 
 
 dieAreaStatement :: DieArea -> Builder
@@ -95,13 +114,34 @@ rowStatement (Row a b x y o c d e f)
 
 
 trackStatement :: Track -> Builder
-trackStatement (Track xy a b c l)
+trackStatement (Track xy a b c ls)
    = "TRACKS "  <> fromText xy <> " " <> realFloat a
    <> " DO "    <> decimal b
    <> " STEP "  <> realFloat c
-   <> " LAYER " <> fromText l
+   <> " LAYER" <> foldMap (mappend " " . fromText) ls
    <> " ;" <> newline
 
+
+gcellgridStatement :: Gcellgrid -> Builder
+gcellgridStatement (Gcellgrid xy a b c)
+  = "GCELLGRID " <> fromText xy <> " " <> realFloat a
+  <> " DO " <> decimal b
+  <> " STEP " <> decimal c
+  <> " ;" <> newline
+
+
+viaStatement :: Via -> Builder
+viaStatement (Via i rs)
+  = "- " <> fromText i
+  <> foldMap (mappend " + " . rectStatement) rs
+  <> " ;" <> newline
+
+
+rectStatement :: Rect -> Builder
+rectStatement (Rect l (x1, y1) (x2, y2))
+  = "RECT " <> fromText l
+  <> " ( " <> realFloat x1 <> " " <> realFloat y1 <> " )"
+  <> " ( " <> realFloat x2 <> " " <> realFloat y2 <> " )"
 
 
 componentStatement :: Component -> Builder

@@ -61,6 +61,7 @@ data Token
     | Tok_EdgeCapacitance
     | Tok_Capacitance
     | Tok_Via
+    | Tok_Vias
     | Tok_Rect
     | Tok_ViaRule
     | Tok_To
@@ -88,6 +89,9 @@ data Token
     | Tok_Vertical
     | Tok_Power
     | Tok_Ground
+    | Tok_Gcellgrid
+
+    | Tok_History Text
 
     -- Identifiers
     | Tok_Ident Text

@@ -5,7 +5,14 @@ import Data.Text (Text)
 
 type Ident = Text
 
-data DEF = DEF [Option] DieArea [Row] [Track] [Component] [Pin] [Net] [Specialnet]
+data DEF = DEF
+  [Option] [History] DieArea
+  [Row] [Track] [Gcellgrid]
+  [Via]
+  [Component]
+  [Pin]
+  [Net]
+  [Specialnet]
   deriving (Eq, Show)
 
 data Option
@@ -23,6 +30,8 @@ data Option
 newtype DistanceList = DistanceList Integer
   deriving (Eq, Show)
 
+data History = History Text
+  deriving (Eq, Show)
 
 data DieArea = DieArea (Double, Double) (Double, Double)
   deriving (Eq, Show)
@@ -31,10 +40,20 @@ data DieArea = DieArea (Double, Double) (Double, Double)
 data Row = Row Ident Ident Integer Integer Orient Integer Integer Integer Integer
   deriving (Eq, Show)
 
-data Track = Track XY Double Integer Double LayerName
+data Track = Track XY Double Integer Double [LayerName]
+  deriving (Eq, Show)
+
+data Gcellgrid = Gcellgrid XY Double Integer Integer
   deriving (Eq, Show)
 
 type XY = Ident
+
+
+data Via = Via Ident [Rect]
+  deriving (Eq, Show)
+
+data Rect = Rect Ident (Double, Double) (Double, Double)
+  deriving (Eq, Show)
 
 
 data Component = Component Ident Ident (Maybe Placed)

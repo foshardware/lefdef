@@ -21,7 +21,7 @@ $any     = [.\n\r]
 @preprocessor = \# .* @newline
 
 $ident_start = [a-zA-Z_\@]
-$ident_part  = [a-zA-Z_0-9\<\>\$\_\\\[\]\.]
+@ident_part  = [^\ ]
 $const_part  = [A-Z_]
 
 $digit     = [0-9]
@@ -41,6 +41,8 @@ $sign      = [\+\-]
 @string_character   = [^\"\\] | @escapes
 @verbatim_character = $any # \" | \"\"
 
+@history = [^\;] | @newline
+
 
 tokens :-
 
@@ -49,9 +51,11 @@ $white+       ;
 @nul_eof      ;
 @preprocessor ;
 
+HISTORY @history* { textTok (Tok_History . T.drop 7) }
+
+
 -- T.T
 \; ;
-
 
 \(             { constTok Tok_Lparen    }
 \)             { constTok Tok_Rparen    }
@@ -109,7 +113,8 @@ WIDTH            { constTok Tok_Width }
 RESISTANCE       { constTok Tok_Resistance }
 EDGECAPACITANCE  { constTok Tok_EdgeCapacitance }
 CAPACITANCE      { constTok Tok_Capacitance }
-VIA	             { constTok Tok_Via }
+VIA              { constTok Tok_Via }
+VIAS             { constTok Tok_Vias }
 RECT             { constTok Tok_Rect }
 VIARULE	         { constTok Tok_ViaRule }
 TO               { constTok Tok_To }
@@ -134,6 +139,7 @@ HORIZONTAL       { constTok Tok_Horizontal }
 VERTICAL         { constTok Tok_Vertical }
 POWER            { constTok Tok_Power }
 GROUND           { constTok Tok_Ground }
+GCELLGRID        { constTok Tok_Gcellgrid }
 
 -- Integer literals
 \-    $digit+     @int_suffix? { textTok Tok_Number }
@@ -150,7 +156,7 @@ GROUND           { constTok Tok_Ground }
 \" @string_character* \"     { textTok (Tok_String . T.drop 1 . T.init)   }
 
 -- Identifiers
-$ident_start $ident_part*      { textTok Tok_Ident }
+$ident_start @ident_part*      { textTok Tok_Ident }
 
 {
 wrap :: (str -> tok) -> AlexPosn -> str -> Lexer tok

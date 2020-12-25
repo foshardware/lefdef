@@ -29,15 +29,24 @@ parseDEF = parse def [] . lexer []
 def :: Parser DEF
 def = DEF
   <$> many1 option
+  <*> many history
   <*> dieArea
   <*> many row
   <*> many track
+  <*> many gcellgrid
+  <*> (foldMap id <$> optional vias)
   <*> components
   <*> pins
   <*> nets
-  <*> (join . toList <$> optional specialnets)
+  <*> (foldMap id <$> optional specialnets)
   <*  endDesign
   <?> "def"
+
+
+history :: Parser History
+history = History <$> maybeToken q
+  where q (Tok_History t) = Just t
+        q _ = Nothing
 
 
 dieArea :: Parser DieArea
@@ -72,12 +81,41 @@ track = tracks_ >> Track
   <*> double
   <*> (do_ *> integer)
   <*> (step_ *> double)
-  <*> (layer_ *> ident)
+  <*> (layer_ *> many ident)
   <?> "track"
+
+
+gcellgrid :: Parser Gcellgrid
+gcellgrid = gcellgrid_ >> Gcellgrid
+  <$> xy
+  <*> double
+  <*> (do_ *> integer)
+  <*> (step_ *> integer)
+  <?> "gcellgrid"
 
 
 xy :: Parser XY
 xy = ident <?> "xy"
+
+
+vias :: Parser [Via]
+vias = vias_ *> integer *> minus_ *> sepBy1 via minus_ <* end_ <* vias_
+  <?> "vias"
+
+
+via :: Parser Via
+via = Via
+  <$> ident
+  <*> (plus_ *> sepBy rect plus_)
+  <?> "via"
+
+
+rect :: Parser Rect
+rect = rect_ >> Rect
+  <$> ident
+  <*> tuple double
+  <*> tuple double
+  <?> "rect"
 
 
 components :: Parser [Component]
@@ -149,7 +187,7 @@ specialnets = specialnets_ *> integer *> minus_ *> sepBy1 specialnet minus_ <* e
 net :: Parser Net
 net = Net
   <$> ident
-  <*> many1 (lparen_ *> contact <* rparen_)
+  <*> many (lparen_ *> contact <* rparen_)
   <*> (optional plus_ *> optional routed)
   <?> "net"
 
@@ -263,6 +301,7 @@ double = do
          | (a, b) <- T.splitAt i t -> pure
          $ fromIntegral (numberValue a)
          + fractionValue (T.tail b)
+  <?> "double"
 
 
 integer :: Parser Integer
@@ -271,6 +310,7 @@ integer = do
     case T.head t of
       '-' -> pure $ fromIntegral $ negate $ numberValue $ T.tail t
       _   -> pure $ fromIntegral $ numberValue t
+  <?> "integer"
 
 
 numberValue :: Text -> Int
@@ -373,6 +413,7 @@ macro_ = p Tok_Macro
 on_ = p Tok_On
 off_ = p Tok_Off
 via_ = p Tok_Via
+vias_ = p Tok_Vias
 overhang_ = p Tok_Overhang
 path_ = p Tok_Path
 port_ = p Tok_Port
@@ -384,3 +425,4 @@ horizontal_ = p Tok_Horizontal
 vertical_ = p Tok_Vertical
 power_ = p Tok_Power
 ground_ = p Tok_Ground
+gcellgrid_ = p Tok_Gcellgrid
