@@ -1,18 +1,19 @@
 
 module Language.DEF.Syntax where
 
-import Data.Text (Text)
+import Data.Text
+import Data.Vector
 
 type Ident = Text
 
 data DEF = DEF
   [Option] [History] DieArea
-  [Row] [Track] [Gcellgrid]
-  [Via]
-  [Component]
-  [Pin]
-  [Net]
-  [Specialnet]
+  [Row] [Tracks] [Gcellgrid]
+  (Vector Via)
+  (Vector Component)
+  (Vector Pin)
+  (Vector Net)
+  (Vector Specialnet)
   deriving (Eq, Show)
 
 data Option
@@ -30,7 +31,7 @@ data Option
 newtype DistanceList = DistanceList Integer
   deriving (Eq, Show)
 
-data History = History Text
+newtype History = History Text
   deriving (Eq, Show)
 
 data DieArea = DieArea (Double, Double) (Double, Double)
@@ -40,7 +41,7 @@ data DieArea = DieArea (Double, Double) (Double, Double)
 data Row = Row Ident Ident Integer Integer Orient Integer Integer Integer Integer
   deriving (Eq, Show)
 
-data Track = Track XY Double Integer Double [LayerName]
+data Tracks = Tracks XY Double Integer Double [LayerName]
   deriving (Eq, Show)
 
 data Gcellgrid = Gcellgrid XY Double Integer Integer

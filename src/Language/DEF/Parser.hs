@@ -3,12 +3,12 @@
 module Language.DEF.Parser where
 
 import Control.Applicative (optional)
-import Control.Monad
-import Data.Char
 import Data.Bifunctor
+import Data.Char
 import Data.Foldable
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Vector (Vector, replicateM)
 import Text.Parsec hiding (option, optional)
 import Text.Parsec.String (GenParser)
 import Text.Parsec.Pos
@@ -32,7 +32,7 @@ def = DEF
   <*> many history
   <*> dieArea
   <*> many row
-  <*> many track
+  <*> many tracks
   <*> many gcellgrid
   <*> (foldMap id <$> optional vias)
   <*> components
@@ -43,10 +43,14 @@ def = DEF
   <?> "def"
 
 
-history :: Parser History
-history = History <$> maybeToken q
-  where q (Tok_History t) = Just t
-        q _ = Nothing
+section :: Parser () -> Parser a -> Parser (Vector a)
+section title parser = do
+    title
+    k <- fromIntegral <$> integer
+    v <- replicateM k $ minus_ *> parser
+    end_
+    title
+    pure v
 
 
 dieArea :: Parser DieArea
@@ -75,8 +79,8 @@ row = row_ >> Row
   <?> "row"
 
 
-track :: Parser Track
-track = tracks_ >> Track
+tracks :: Parser Tracks
+tracks = tracks_ >> Tracks
   <$> xy
   <*> double
   <*> (do_ *> integer)
@@ -98,9 +102,8 @@ xy :: Parser XY
 xy = ident <?> "xy"
 
 
-vias :: Parser [Via]
-vias = vias_ *> integer *> minus_ *> sepBy1 via minus_ <* end_ <* vias_
-  <?> "vias"
+vias :: Parser (Vector Via)
+vias = section vias_ via <?> "vias"
 
 
 via :: Parser Via
@@ -118,9 +121,8 @@ rect = rect_ >> Rect
   <?> "rect"
 
 
-components :: Parser [Component]
-components = components_ *> integer *> minus_ *> sepBy1 component minus_ <* end_ <* components_
-  <?> "components"
+components :: Parser (Vector Component)
+components = section components_ component <?> "components"
 
 
 component :: Parser Component
@@ -144,12 +146,11 @@ placed
 
 
 orientation :: Parser Orient
-orientation = ident <?> "ori"
+orientation = ident <?> "orientation"
 
 
-pins :: Parser [Pin]
-pins = pins_ *> integer *> minus_ *> sepBy1 pin minus_ <* end_ <* pins_
-  <?> "pins"
+pins :: Parser (Vector Pin)
+pins = section pins_ pin <?> "pins"
 
 
 layer :: Parser Layer
@@ -171,17 +172,16 @@ pin = Pin
 
 
 direction :: Parser Direction
-direction = direction_ >> (Input <$ input_ <|> Output <$ output_)
+direction = direction_ *> (Input <$ input_ <|> Output <$ output_)
+  <?> "direction"
 
 
-nets :: Parser [Net]
-nets = nets_ *> integer *> minus_ *> sepBy1 net minus_ <* end_ <* nets_
-  <?> "nets"
+nets :: Parser (Vector Net)
+nets = section nets_ net <?> "nets"
 
 
-specialnets :: Parser [Specialnet]
-specialnets = specialnets_ *> integer *> minus_ *> sepBy1 specialnet minus_ <* end_ <* specialnets_
-  <?> "specialnets"
+specialnets :: Parser (Vector Specialnet)
+specialnets = section specialnets_ specialnet <?> "specialnets"
 
 
 net :: Parser Net
@@ -276,6 +276,11 @@ manufacturingGrid :: Parser Option
 manufacturingGrid = manufacturinggrid_ >> ManufacturingGrid <$> double
     <?> "manufacturing_grid"
 
+
+history :: Parser History
+history = History <$> maybeToken q <?> "history"
+  where q (Tok_History t) = Just t
+        q _ = Nothing
 
 
 endDesign :: Parser ()

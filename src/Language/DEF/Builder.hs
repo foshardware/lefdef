@@ -3,11 +3,11 @@
 module Language.DEF.Builder where
 
 import Data.Foldable
-import Data.Text.Lazy hiding (length, null)
 import Data.Text.Lazy.IO as Text
 import Data.Text.Lazy.Builder
 import Data.Text.Lazy.Builder.Int
 import Data.Text.Lazy.Builder.RealFloat hiding (Fixed)
+import Data.Vector (Vector)
 
 import Language.DEF.Syntax
 
@@ -30,58 +30,50 @@ printDEF = Text.putStr . toLazyText . builderDEF
 
 
 builderDEF :: DEF -> Builder
-builderDEF (DEF options histories area rows tracks gcellgrids vias components pins nets specialnets)
-   = foldMap optionStatement options
+builderDEF (DEF options histories area rows trs gcellgrids vias components pins nets specialnets)
+   = foldMap option options
   <> newline
-  <> foldMap historyStatement histories
+  <> foldMap history histories
   <> newline
-  <> dieAreaStatement area
+  <> dieArea area
   <> newline
-  <> foldMap rowStatement rows
+  <> foldMap row rows
   <> newline
-  <> foldMap trackStatement tracks
+  <> foldMap tracks trs
   <> newline
-  <> foldMap gcellgridStatement gcellgrids
+  <> foldMap gcellgrid gcellgrids
   <> newline
-
-  <> (if null vias then mempty else
-     "VIAS " <> decimal (length vias) <> " ;" <> newline
-  <> foldMap viaStatement vias
-  <> "END VIAS" <> newline
-  <> newline)
-
-  <> "COMPONENTS " <> decimal (length components) <> " ;" <> newline
-  <> foldMap componentStatement components
-  <> "END COMPONENTS" <> newline
+  <> section "VIAS" via vias
   <> newline
-  <> "PINS " <> decimal (length pins) <> " ;" <> newline
-  <> foldMap pinStatement pins
-  <> "END PINS" <> newline
+  <> section "COMPONENTS" component components
   <> newline
-  <> "NETS " <> decimal (length nets) <> " ;" <> newline
-  <> foldMap netStatement nets
-  <> "END NETS" <> newline
+  <> section "PINS" pin pins
   <> newline
-
-  <> (if null specialnets then mempty else
-     "SPECIALNETS " <> decimal (length specialnets) <> " ;" <> newline
-  <> foldMap specialnetStatement specialnets
-  <> "END SPECIALNETS" <> newline
-  <> newline)
-
+  <> section "NETS" net nets
+  <> newline
+  <> section "SPECIALNETS" specialnet specialnets
+  <> newline
   <> "END DESIGN"
   <> newline
 
 
-historyStatement :: History -> Builder
-historyStatement (History string)
+section :: Builder -> (a -> Builder) -> Vector a -> Builder
+section _ _ xs | null xs = mempty
+section title builder xs
+   = title <> " " <> decimal (length xs) <> " ;" <> newline
+  <> foldMap builder xs
+  <> "END " <> title <> newline
+
+
+history :: History -> Builder
+history (History string)
    = "HISTORY"
   <> fromText string
-  <> " ;" <> newline
+  <> ";" <> newline
 
 
-dieAreaStatement :: DieArea -> Builder
-dieAreaStatement (DieArea (x1, y1) (x2, y2))
+dieArea :: DieArea -> Builder
+dieArea (DieArea (x1, y1) (x2, y2))
    = "DIEAREA"
   <> " ( " <> realFloat x1 <> " " <> realFloat y1 <> " )"
   <> " ( " <> realFloat x2 <> " " <> realFloat y2 <> " )"
@@ -89,23 +81,23 @@ dieAreaStatement (DieArea (x1, y1) (x2, y2))
   <> newline
 
 
-optionStatement :: Option -> Builder
-optionStatement    (Version x) = "VERSION " <> realFloat x <> " ;" <> newline
-optionStatement (Cases x) | x = "NAMESCASESENSITIVE ON ;" <> newline
-optionStatement      (Cases x) = "NAMESCASESENSITIVE OFF ;" <> newline
-optionStatement (DivideChar x) = "DIVIDERCHAR \"" <> fromText x <> "\" ;" <> newline
-optionStatement   (BitChars x) = "BUSBITCHARS \"" <> fromText x <> "\" ;" <> newline
-optionStatement     (Design x) = "DESIGN " <> fromText x <> " ;" <> newline
-optionStatement      (Units x) = "UNITS DISTANCE MICRONS " <> distanceList x <> " ;" <> newline
-optionStatement _ = mempty
+option :: Option -> Builder
+option    (Version x) = "VERSION " <> realFloat x <> " ;" <> newline
+option (Cases x) | x = "NAMESCASESENSITIVE ON ;" <> newline
+option      (Cases x) = "NAMESCASESENSITIVE OFF ;" <> newline
+option (DivideChar x) = "DIVIDERCHAR \"" <> fromText x <> "\" ;" <> newline
+option   (BitChars x) = "BUSBITCHARS \"" <> fromText x <> "\" ;" <> newline
+option     (Design x) = "DESIGN " <> fromText x <> " ;" <> newline
+option      (Units x) = "UNITS DISTANCE MICRONS " <> distanceList x <> " ;" <> newline
+option _ = mempty
 
 
 distanceList :: DistanceList -> Builder
 distanceList (DistanceList x) = decimal x
 
 
-rowStatement :: Row -> Builder
-rowStatement (Row a b x y o c d e f)
+row :: Row -> Builder
+row (Row a b x y o c d e f)
   = "ROW " <> fromText a <> " " <> fromText b
   <> " " <> decimal x <> " " <> decimal y
   <> " " <> fromText o <> " DO " <> decimal c <> " BY " <> decimal d
@@ -113,8 +105,8 @@ rowStatement (Row a b x y o c d e f)
   <> " ;" <> newline
 
 
-trackStatement :: Track -> Builder
-trackStatement (Track xy a b c ls)
+tracks :: Tracks -> Builder
+tracks (Tracks xy a b c ls)
    = "TRACKS "  <> fromText xy <> " " <> realFloat a
    <> " DO "    <> decimal b
    <> " STEP "  <> realFloat c
@@ -122,33 +114,33 @@ trackStatement (Track xy a b c ls)
    <> " ;" <> newline
 
 
-gcellgridStatement :: Gcellgrid -> Builder
-gcellgridStatement (Gcellgrid xy a b c)
+gcellgrid :: Gcellgrid -> Builder
+gcellgrid (Gcellgrid xy a b c)
   = "GCELLGRID " <> fromText xy <> " " <> realFloat a
   <> " DO " <> decimal b
   <> " STEP " <> decimal c
   <> " ;" <> newline
 
 
-viaStatement :: Via -> Builder
-viaStatement (Via i rs)
+via :: Via -> Builder
+via (Via i rs)
   = "- " <> fromText i
-  <> foldMap (mappend " + " . rectStatement) rs
+  <> foldMap (mappend " + " . rect) rs
   <> " ;" <> newline
 
 
-rectStatement :: Rect -> Builder
-rectStatement (Rect l (x1, y1) (x2, y2))
+rect :: Rect -> Builder
+rect (Rect l (x1, y1) (x2, y2))
   = "RECT " <> fromText l
   <> " ( " <> realFloat x1 <> " " <> realFloat y1 <> " )"
   <> " ( " <> realFloat x2 <> " " <> realFloat y2 <> " )"
 
 
-componentStatement :: Component -> Builder
-componentStatement (Component a b Nothing)
+component :: Component -> Builder
+component (Component a b Nothing)
    = "- " <> fromText a <> " " <> fromText b 
    <> " ;" <> newline
-componentStatement (Component a b (Just placed))
+component (Component a b (Just placed))
    = "- " <> fromText a <> " " <> fromText b 
    <> " + " <> placedExpression placed
    <> " ;" <> newline
@@ -164,8 +156,8 @@ placedExpression Unplaced
 
 
 
-pinStatement :: Pin -> Builder
-pinStatement (Pin a net dir layer placed)
+pin :: Pin -> Builder
+pin (Pin a net dir layer placed)
   = "- " <> fromText a
   <> foldMap (mappend " + NET " . fromText) net
   <> foldMap (mappend " + " . directionExpression) dir
@@ -188,8 +180,8 @@ layerExpression (Layer l (x1, y1) (x2, y2))
 
 
 
-netStatement :: Net -> Builder
-netStatement (Net n cs rt)
+net :: Net -> Builder
+net (Net n cs rt)
    = "- " <> fromText n
   <> mconcat [ newline <> "  ( " <> either p q c <> " )" | c <- cs ]
   <> foldMap (mappend (newline <> "+ ") . routedExpression) rt
@@ -198,8 +190,8 @@ netStatement (Net n cs rt)
         q (x, y) = fromText x <> " " <> fromText y
 
 
-specialnetStatement :: Specialnet -> Builder
-specialnetStatement (Specialnet n rt)
+specialnet :: Specialnet -> Builder
+specialnet (Specialnet n rt)
    = "- " <> fromText n
   <> foldMap (mappend (newline <> "+ ") . routedExpression) rt
   <> " ;" <> newline

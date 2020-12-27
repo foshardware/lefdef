@@ -1,5 +1,5 @@
 name:                def
-version:             0.1.0.0
+version:             0.2.0.0
 github:              "foshardware/def"
 license:             BSD3
 author:              "Andreas Westerwick"
@@ -17,6 +17,7 @@ dependencies:
 - array
 - parsec
 - text
+- vector
 
 library:
   source-dirs: src
