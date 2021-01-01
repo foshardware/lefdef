@@ -43,7 +43,6 @@ main = do
 
 ```bash
 
-git submodule update --init --recursive
 stack test
 
 ```

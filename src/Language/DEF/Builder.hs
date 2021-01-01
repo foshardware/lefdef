@@ -83,8 +83,8 @@ dieArea (DieArea (x1, y1) (x2, y2))
 
 option :: Option -> Builder
 option    (Version x) = "VERSION " <> realFloat x <> " ;" <> newline
-option (Cases x) | x = "NAMESCASESENSITIVE ON ;" <> newline
-option      (Cases x) = "NAMESCASESENSITIVE OFF ;" <> newline
+option  (Cases x) | x = "NAMESCASESENSITIVE ON ;" <> newline
+option      (Cases _) = "NAMESCASESENSITIVE OFF ;" <> newline
 option (DivideChar x) = "DIVIDERCHAR \"" <> fromText x <> "\" ;" <> newline
 option   (BitChars x) = "BUSBITCHARS \"" <> fromText x <> "\" ;" <> newline
 option     (Design x) = "DESIGN " <> fromText x <> " ;" <> newline
@@ -157,9 +157,9 @@ placedExpression Unplaced
 
 
 pin :: Pin -> Builder
-pin (Pin a net dir layer placed)
+pin (Pin a n dir layer placed)
   = "- " <> fromText a
-  <> foldMap (mappend " + NET " . fromText) net
+  <> foldMap (mappend " + NET " . fromText) n
   <> foldMap (mappend " + " . directionExpression) dir
   <> foldMap (mappend (newline <> "  + ") . layerExpression) layer
   <> foldMap (mappend (newline <> "  + ") . placedExpression) placed
@@ -195,8 +195,6 @@ specialnet (Specialnet n rt)
    = "- " <> fromText n
   <> foldMap (mappend (newline <> "+ ") . routedExpression) rt
   <> " ;" <> newline
-  where p = mappend "PIN " . fromText
-        q (x, y) = fromText x <> " " <> fromText y
 
 
 routedExpression :: Routed -> Builder
