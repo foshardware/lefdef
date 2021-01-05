@@ -37,6 +37,7 @@ library
       Language.LEF.Parser
       Language.LEF.Syntax
       Language.LEFDEF.Lexer
+      Language.LEFDEF.Parser
       Language.LEFDEF.Tokens
   other-modules:
       Paths_lefdef
