@@ -1,5 +1,5 @@
 {
-module Language.LEF.Lexer
+module Language.LEFDEF.Lexer
     ( Lexer (..)
     , Token (..)
     , lexer
@@ -8,7 +8,7 @@ module Language.LEF.Lexer
 import Data.Char (ord)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import Language.LEF.Tokens
+import Language.LEFDEF.Tokens
 }
 
 $any     = [.\n\r]
@@ -21,7 +21,7 @@ $any     = [.\n\r]
 @preprocessor = \# .* @newline
 
 $ident_start = [a-zA-Z_\@]
-$ident_part  = [a-zA-Z_\-0-9]
+@ident_part  = [^\ ]
 $const_part  = [A-Z_]
 
 $digit     = [0-9]
@@ -41,6 +41,8 @@ $sign      = [\+\-]
 @string_character   = [^\"\\] | @escapes
 @verbatim_character = $any # \" | \"\"
 
+@history = [^\;] | @newline
+
 
 tokens :-
 
@@ -49,10 +51,41 @@ $white+       ;
 @nul_eof      ;
 @preprocessor ;
 
+HISTORY @history* { textTok (Tok_History . T.drop 7) }
+
+
 -- T.T
 \; ;
 
+\(             { constTok Tok_Lparen    }
+\)             { constTok Tok_Rparen    }
+
+\-             { constTok Tok_Minus     }
+\+             { constTok Tok_Plus      }
+
+\*             { constTok Tok_Star      }
+
+
 -- Keywords
+SPECIALNETS        { constTok Tok_Specialnets }
+ROUTED             { constTok Tok_Routed   }
+NEW                { constTok Tok_New      }
+NET                { constTok Tok_Net      }
+NETS               { constTok Tok_Nets      }
+PINS               { constTok Tok_Pins      }
+PLACED             { constTok Tok_Placed    }
+COMPONENTS         { constTok Tok_Components }
+TRACKS             { constTok Tok_Tracks    }
+FIXED              { constTok Tok_Fixed     }
+SOURCE             { constTok Tok_Source    }
+SIGNAL             { constTok Tok_Signal    }
+DIST               { constTok Tok_Dist      }
+DO                 { constTok Tok_Do        }
+BY                 { constTok Tok_By        }
+ROW                { constTok Tok_Row       }
+STEP               { constTok Tok_Step      }
+DIEAREA            { constTok Tok_Diearea   }
+DESIGN             { constTok Tok_Design    }
 END                { constTok Tok_End       }
 LIBRARY            { constTok Tok_Library   }
 VERSION            { constTok Tok_Version   }
@@ -60,7 +93,7 @@ NAMESCASESENSITIVE { constTok Tok_Namescasesensitive }
 BUSBITCHARS        { constTok Tok_BusBitChars }
 DIVIDERCHAR        { constTok Tok_DividerChar }
 UNITS              { constTok Tok_Units       }
-DATABASE           { constTok Tok_Database    }
+DISTANCE           { constTok Tok_Distance    }
 ON                 { constTok Tok_On          }
 OFF                { constTok Tok_Off         }
 MICRONS	           { constTok Tok_Microns     }
@@ -82,7 +115,8 @@ WIDTH            { constTok Tok_Width }
 RESISTANCE       { constTok Tok_Resistance }
 EDGECAPACITANCE  { constTok Tok_EdgeCapacitance }
 CAPACITANCE      { constTok Tok_Capacitance }
-VIA	             { constTok Tok_Via }
+VIA              { constTok Tok_Via }
+VIAS             { constTok Tok_Vias }
 RECT             { constTok Tok_Rect }
 VIARULE	         { constTok Tok_ViaRule }
 TO               { constTok Tok_To }
@@ -118,11 +152,12 @@ POLYGON          { constTok Tok_Polygon }
 RANGE            { constTok Tok_Range }
 ANALOG           { constTok Tok_Analog }
 CLOCK            { constTok Tok_Clock }
-SIGNAL           { constTok Tok_Signal }
+DATABASE         { constTok Tok_Database }
 ANTENNAPARTIALMETALAREA      { constTok Tok_Antennapartialmetalarea }
 ANTENNAPARTIALMETALSIDEAREA  { constTok Tok_Antennapartialmetalsidearea }
 ANTENNAGATEAREA              { constTok Tok_Antennagatearea }
 ANTENNADIFFAREA              { constTok Tok_Antennadiffarea }
+GCELLGRID        { constTok Tok_Gcellgrid }
 
 -- Integer literals
 \-    $digit+     @int_suffix? { textTok Tok_Number }
@@ -139,7 +174,7 @@ ANTENNADIFFAREA              { constTok Tok_Antennadiffarea }
 \" @string_character* \"     { textTok (Tok_String . T.drop 1 . T.init)   }
 
 -- Identifiers
-$ident_start $ident_part*      { textTok Tok_Ident }
+$ident_start @ident_part*      { textTok Tok_Ident }
 
 {
 wrap :: (str -> tok) -> AlexPosn -> str -> Lexer tok

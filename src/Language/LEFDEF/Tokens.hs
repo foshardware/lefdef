@@ -1,5 +1,5 @@
 
-module Language.LEF.Tokens
+module Language.LEFDEF.Tokens
     ( Lexer (..)
     , Pos
     , Token (..)
@@ -15,13 +15,36 @@ type Pos = (Int, Int)
 data Token
     -- Keywords
     = Tok_End
+    | Tok_Specialnets
+    | Tok_Routed
+    | Tok_Star
+    | Tok_New
+    | Tok_Net
+    | Tok_Nets
+    | Tok_Row
+    | Tok_Pins
+    | Tok_Plus
+    | Tok_Fixed
+    | Tok_Placed
+    | Tok_Source
+    | Tok_Signal
+    | Tok_Dist
+    | Tok_Components
+    | Tok_Minus
+    | Tok_Tracks
+    | Tok_Do
+    | Tok_Step
+    | Tok_Diearea
     | Tok_Library
+    | Tok_Lparen
+    | Tok_Rparen
     | Tok_Version
     | Tok_Namescasesensitive
     | Tok_BusBitChars
     | Tok_DividerChar
     | Tok_Units
-    | Tok_Database
+    | Tok_Design
+    | Tok_Distance
     | Tok_Microns
     | Tok_Obs
     | Tok_Pin
@@ -42,6 +65,7 @@ data Token
     | Tok_EdgeCapacitance
     | Tok_Capacitance
     | Tok_Via
+    | Tok_Vias
     | Tok_Rect
     | Tok_ViaRule
     | Tok_To
@@ -80,7 +104,10 @@ data Token
     | Tok_Range
     | Tok_Analog
     | Tok_Clock
-    | Tok_Signal
+    | Tok_Database
+    | Tok_Gcellgrid
+
+    | Tok_History Text
 
     -- Identifiers
     | Tok_Ident Text

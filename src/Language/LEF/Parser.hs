@@ -14,7 +14,7 @@ import Text.Parsec.String (GenParser)
 import Text.Parsec.Pos
 import Prelude hiding (null)
 
-import Language.LEF.Lexer
+import Language.LEFDEF.Lexer
 import Language.LEF.Syntax
 
 

@@ -1,6 +1,6 @@
-name:                lef
-version:             0.1.0.2
-github:              "foshardware/lef"
+name:                lefdef
+version:             0.1.0.0
+github:              "foshardware/lefdef"
 license:             BSD3
 author:              "Andreas Westerwick"
 maintainer:          "westerwick@pconas.de"
@@ -13,20 +13,22 @@ extra-source-files:
 
 custom-setup:
   dependencies:
-  - base >= 4.7 && < 5
+  - base >= 4.9.1 && < 5
   - Cabal
   - process
 
-description:         Please see the README on GitHub at <https://github.com/foshardware/lef#readme>
+description:         Please see the README on GitHub at <https://github.com/foshardware/lefdef#readme>
 
 dependencies:
-- base >= 4.7 && < 5
+- base >= 4.9.1 && < 5
 - array
+- filepath
 - parsec
 - tasty
 - tasty-hunit
 - tasty-quickcheck
 - text
+- vector
 
 library:
   source-dirs: src
@@ -35,7 +37,7 @@ library:
   - -O2
 
 tests:
-  lef-test:
+  lefdef-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -44,5 +46,5 @@ tests:
     - -threaded
     - -rtsopts
     dependencies:
-    - lef
+    - lefdef
 
