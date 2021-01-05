@@ -14,14 +14,14 @@ extra-source-files:
 
 custom-setup:
   dependencies:
-  - base >= 4.7 && < 5
+  - base >= 4.9.1 && < 5
   - Cabal
   - process
 
 description:         Please see the README on GitHub at <https://github.com/foshardware/def#readme>
 
 dependencies:
-- base >= 4.7 && < 5
+- base >= 4.9.1 && < 5
 - array
 - filepath
 - parsec

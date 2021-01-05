@@ -1,6 +1,12 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Language.DEF.Builder where
+
+#if MIN_VERSION_base(4,10,0)
+#else
+import Data.Semigroup ((<>))
+#endif
 
 import Data.Foldable
 import Data.Text.Lazy.IO as Text
