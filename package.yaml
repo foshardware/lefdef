@@ -22,8 +22,10 @@ description:         Please see the README on GitHub at <https://github.com/fosh
 dependencies:
 - base >= 4.9 && < 5
 - array
+- attoparsec
 - filepath
 - parsec
+- scientific
 - tasty
 - tasty-hunit
 - tasty-quickcheck

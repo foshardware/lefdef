@@ -8,14 +8,15 @@ module Language.DEF.Builder where
 import Data.Semigroup ((<>))
 #endif
 
-import Data.Fixed
 import Data.Foldable
 import Data.Text.Lazy.IO as Text
 import Data.Text.Lazy.Builder
 import Data.Text.Lazy.Builder.Int
+import Data.Text.Lazy.Builder.Scientific (scientificBuilder)
 import Data.Vector (Vector)
 
 import Language.DEF.Syntax
+import Language.LEFDEF.Syntax
 
 
 
@@ -23,8 +24,8 @@ newline :: Builder
 newline = "\n"
 
 
-fixed :: Decimal -> Builder
-fixed = fromString . showFixed True
+rational :: Decimal -> Builder
+rational = scientificBuilder
 
 
 defaultOptions :: Maybe Name -> [Option]
@@ -89,14 +90,14 @@ history (History string)
 dieArea :: DieArea -> Builder
 dieArea (DieArea (x1, y1) (x2, y2))
    = "DIEAREA"
-  <> " ( " <> fixed x1 <> " " <> fixed y1 <> " )"
-  <> " ( " <> fixed x2 <> " " <> fixed y2 <> " )"
+  <> " ( " <> rational x1 <> " " <> rational y1 <> " )"
+  <> " ( " <> rational x2 <> " " <> rational y2 <> " )"
   <> " ;"
   <> newline
 
 
 option :: Option -> Builder
-option    (Version x) = "VERSION " <> fixed x <> " ;" <> newline
+option    (Version x) = "VERSION " <> rational x <> " ;" <> newline
 option  (Cases x) | x = "NAMESCASESENSITIVE ON ;" <> newline
 option      (Cases _) = "NAMESCASESENSITIVE OFF ;" <> newline
 option (DivideChar x) = "DIVIDERCHAR \"" <> fromText x <> "\" ;" <> newline
@@ -121,16 +122,16 @@ row (Row a b x y o c d e f)
 
 tracks :: Tracks -> Builder
 tracks (Tracks xy a b c ls)
-   = "TRACKS "  <> fromText xy <> " " <> fixed a
+   = "TRACKS "  <> fromText xy <> " " <> rational a
    <> " DO "    <> decimal b
-   <> " STEP "  <> fixed c
+   <> " STEP "  <> rational c
    <> " LAYER" <> foldMap (mappend " " . fromText) ls
    <> " ;" <> newline
 
 
 gcellgrid :: Gcellgrid -> Builder
 gcellgrid (Gcellgrid xy a b c)
-  = "GCELLGRID " <> fromText xy <> " " <> fixed a
+  = "GCELLGRID " <> fromText xy <> " " <> rational a
   <> " DO " <> decimal b
   <> " STEP " <> decimal c
   <> " ;" <> newline
@@ -146,8 +147,8 @@ via (Via i rs)
 rect :: Rect -> Builder
 rect (Rect l (x1, y1) (x2, y2))
   = "RECT " <> fromText l
-  <> " ( " <> fixed x1 <> " " <> fixed y1 <> " )"
-  <> " ( " <> fixed x2 <> " " <> fixed y2 <> " )"
+  <> " ( " <> rational x1 <> " " <> rational y1 <> " )"
+  <> " ( " <> rational x2 <> " " <> rational y2 <> " )"
 
 
 component :: Component -> Builder
@@ -162,9 +163,9 @@ component (Component a b (Just placed))
 
 placedExpression :: Placed -> Builder
 placedExpression (Placed (x, y) o)
-  = "PLACED" <> " ( " <> fixed x <> " " <> fixed y <> " ) " <> fromText o
+  = "PLACED" <> " ( " <> rational x <> " " <> rational y <> " ) " <> fromText o
 placedExpression (Fixed (x, y) o)
-  = "FIXED" <> " ( " <> fixed x <> " " <> fixed y <> " ) " <> fromText o
+  = "FIXED" <> " ( " <> rational x <> " " <> rational y <> " ) " <> fromText o
 placedExpression Unplaced
   = "UNPLACED"
 

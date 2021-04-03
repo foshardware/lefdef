@@ -2,12 +2,8 @@
 module Language.LEF.Syntax where
 
 import Data.Text
-import Data.Fixed
 
-
-type Name = Text
-
-type Decimal = Fixed E12
+import Language.LEFDEF.Syntax
 
 
 data LEF = LEF [Option] [Layer] [Via] [ViaRule] Spacing [Site] [Macro]

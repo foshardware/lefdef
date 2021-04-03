@@ -2,13 +2,9 @@
 module Language.DEF.Syntax where
 
 import Data.Text
-import Data.Fixed
 import Data.Vector
 
-
-type Name = Text
-
-type Decimal = Fixed E12
+import Language.LEFDEF.Syntax
 
 
 data DEF = DEF

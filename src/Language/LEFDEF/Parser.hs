@@ -1,19 +1,15 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
-{-# LANGUAGE BangPatterns #-}
 
 module Language.LEFDEF.Parser where
 
-import Data.Char
-import Data.Maybe
 import Data.Text (Text)
-import qualified Data.Text as T
 import Text.Parsec hiding (option, optional)
 import Text.Parsec.String (GenParser)
 import Text.Parsec.Pos
-import Prelude hiding (null)
+import qualified Data.Attoparsec.Text as A
 
 import Language.LEFDEF.Lexer
-import Language.LEF.Syntax
+import Language.LEFDEF.Syntax
 
 
 
@@ -25,44 +21,21 @@ boolean = True <$ on_ <|> False <$ off_ <?> "boolean"
 
 
 decimal :: Parser Decimal
-decimal
-  = do
-    t <- number
-    pure $! case (T.head t, T.findIndex (== '.') t) of
-      ('-', Nothing)
-          -> negate $ fromIntegral $ numberValue $ T.tail t
-      (_, Nothing)
-          -> fromIntegral $ numberValue t
-      ('-', Just i)
-          | (left, right) <- T.splitAt i t
-          -> negate $ fromIntegral (numberValue $ T.tail left) + fractionValue (T.tail right)
-      (_, Just i)
-          | (left, right) <- T.splitAt i t
-          -> fromIntegral (numberValue left) + fractionValue (T.tail right)
+decimal = do
+  t <- number
+  case A.parseOnly (A.scientific) t of
+    Left ex -> fail ex
+    Right r -> pure $! r
   <?> "decimal"
 
 
 integer :: Parser Integer
-integer
-  = do
-    t <- number
-    pure $! case T.head t of
-      '-' -> fromIntegral $ negate $ numberValue $ T.tail t
-      _   -> fromIntegral $ numberValue t
+integer = do
+  t <- number
+  case A.parseOnly (A.signed A.decimal) t of
+     Left ex -> fail ex
+     Right r -> pure $! r
   <?> "integer"
-
-
-
-numberValue :: Text -> Int
-numberValue = T.foldl' (\ x c -> 10 * x + digitToInt c) 0
-
-
-fractionValue :: Text -> Decimal
-fractionValue
-  = (\ (s, x) -> fromIntegral s / fromIntegral x)
-  . T.foldl' (\ (!s, !x) d -> (x * digitToInt d + s, x * 10)) (0, 1)
-  . T.dropWhile (== '0')
-  . T.reverse
 
 
 

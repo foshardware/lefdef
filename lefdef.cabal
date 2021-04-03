@@ -38,6 +38,7 @@ library
       Language.LEF.Syntax
       Language.LEFDEF.Lexer
       Language.LEFDEF.Parser
+      Language.LEFDEF.Syntax
       Language.LEFDEF.Tokens
   other-modules:
       Paths_lefdef
@@ -46,9 +47,11 @@ library
   ghc-options: -Wall -O2
   build-depends:
       array
+    , attoparsec
     , base >=4.9 && <5
     , filepath
     , parsec
+    , scientific
     , tasty
     , tasty-hunit
     , tasty-quickcheck
@@ -68,10 +71,12 @@ test-suite lefdef-test
   ghc-options: -Wall -O2 -threaded -rtsopts
   build-depends:
       array
+    , attoparsec
     , base >=4.9 && <5
     , filepath
     , lefdef
     , parsec
+    , scientific
     , tasty
     , tasty-hunit
     , tasty-quickcheck
