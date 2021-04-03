@@ -1,11 +1,11 @@
 cabal-version: 1.24
 
--- This file has been generated from package.yaml by hpack version 0.34.3.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 
 name:           lefdef
-version:        0.1.0.0
+version:        0.2.0.0
 description:    Please see the README on GitHub at <https://github.com/foshardware/lefdef#readme>
 homepage:       https://github.com/foshardware/lefdef#readme
 bug-reports:    https://github.com/foshardware/lefdef/issues
@@ -26,7 +26,7 @@ source-repository head
 custom-setup
   setup-depends:
       Cabal
-    , base >=4.9.1 && <5
+    , base >=4.9 && <5
     , process
 
 library
@@ -46,7 +46,7 @@ library
   ghc-options: -Wall -O2
   build-depends:
       array
-    , base >=4.9.1 && <5
+    , base >=4.9 && <5
     , filepath
     , parsec
     , tasty
@@ -65,10 +65,10 @@ test-suite lefdef-test
       Paths_lefdef
   hs-source-dirs:
       test
-  ghc-options: -Wall -O -threaded -rtsopts
+  ghc-options: -Wall -O2 -threaded -rtsopts
   build-depends:
       array
-    , base >=4.9.1 && <5
+    , base >=4.9 && <5
     , filepath
     , lefdef
     , parsec
