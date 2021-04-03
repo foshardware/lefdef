@@ -110,7 +110,7 @@ data Token
     | Tok_History Text
 
     -- Identifiers
-    | Tok_Ident Text
+    | Tok_Identifier Text
     | Token Text
 
     -- Literals

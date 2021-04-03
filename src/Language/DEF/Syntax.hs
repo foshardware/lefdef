@@ -2,9 +2,14 @@
 module Language.DEF.Syntax where
 
 import Data.Text
+import Data.Fixed
 import Data.Vector
 
-type Ident = Text
+
+type Name = Text
+
+type Decimal = Fixed E12
+
 
 data DEF = DEF
   [Option] [History] DieArea
@@ -17,15 +22,15 @@ data DEF = DEF
   deriving (Eq, Show)
 
 data Option
-  = Version Double
+  = Version Decimal
   | Cases Bool
-  | Design Ident
-  | BitChars Ident
-  | DivideChar Ident
+  | Design Name
+  | BitChars Name
+  | DivideChar Name
   | Units DistanceList
   | UseMinSpacing Bool
-  | ClearanceMeasure Ident
-  | ManufacturingGrid Double
+  | ClearanceMeasure Name
+  | ManufacturingGrid Decimal
   deriving (Eq, Show)
 
 newtype DistanceList = DistanceList Integer
@@ -34,43 +39,43 @@ newtype DistanceList = DistanceList Integer
 newtype History = History Text
   deriving (Eq, Show)
 
-data DieArea = DieArea (Double, Double) (Double, Double)
+data DieArea = DieArea (Decimal, Decimal) (Decimal, Decimal)
   deriving (Eq, Show)
 
 
-data Row = Row Ident Ident Integer Integer Orient Integer Integer Integer Integer
+data Row = Row Name Name Integer Integer Orientation Integer Integer Integer Integer
   deriving (Eq, Show)
 
-data Tracks = Tracks XY Double Integer Double [LayerName]
+data Tracks = Tracks XY Decimal Integer Decimal [LayerName]
   deriving (Eq, Show)
 
-data Gcellgrid = Gcellgrid XY Double Integer Integer
+data Gcellgrid = Gcellgrid XY Decimal Integer Integer
   deriving (Eq, Show)
 
-type XY = Ident
+type XY = Name
 
 
-data Via = Via Ident [Rect]
+data Via = Via Name [Rect]
   deriving (Eq, Show)
 
-data Rect = Rect Ident (Double, Double) (Double, Double)
+data Rect = Rect Name (Decimal, Decimal) (Decimal, Decimal)
   deriving (Eq, Show)
 
 
-data Component = Component Ident Ident (Maybe Placed)
+data Component = Component Name Name (Maybe Placed)
   deriving (Eq, Show)
 
 
 data Placed
   = Unplaced
-  | Placed (Double, Double) Orient
-  | Fixed (Double, Double) Orient
+  | Placed (Decimal, Decimal) Orientation
+  | Fixed (Decimal, Decimal) Orientation
   deriving (Eq, Show)
 
-type Orient = Ident
+type Orientation = Name
 
 
-data Pin = Pin Ident (Maybe Ident) (Maybe Direction) (Maybe Layer) (Maybe Placed)
+data Pin = Pin Name (Maybe Name) (Maybe Direction) (Maybe Layer) (Maybe Placed)
   deriving (Eq, Show)
 
 
@@ -78,26 +83,26 @@ data Layer = Layer LayerName (Integer, Integer) (Integer, Integer)
   deriving (Eq, Show)
 
 
-data Net = Net Ident [Contact] (Maybe Routed)
+data Net = Net Name [Contact] (Maybe Routed)
   deriving (Eq, Show)
 
 
-data Specialnet = Specialnet Ident (Maybe Routed)
+data Specialnet = Specialnet Name (Maybe Routed)
   deriving (Eq, Show)
 
 
-type Contact = Either Ident (Ident, Ident)
+type Contact = Either Name (Name, Name)
 
 
 data Routed = Routed [Segment Integer]
   deriving (Eq, Show)
 
 
-data Segment a = Seg LayerName (Maybe a) (a, a) [(Maybe a, Maybe a)] (Maybe Ident)
+data Segment a = Seg LayerName (Maybe a) (a, a) [(Maybe a, Maybe a)] (Maybe Name)
   deriving (Eq, Show)
 
 
-type LayerName = Ident
+type LayerName = Name
 
 
 data Direction = Input | Output | InputOutput

@@ -8,26 +8,34 @@ module Language.DEF.Builder where
 import Data.Semigroup ((<>))
 #endif
 
+import Data.Fixed
 import Data.Foldable
 import Data.Text.Lazy.IO as Text
 import Data.Text.Lazy.Builder
 import Data.Text.Lazy.Builder.Int
-import Data.Text.Lazy.Builder.RealFloat hiding (Fixed)
 import Data.Vector (Vector)
 
 import Language.DEF.Syntax
 
 
 
-defaultOptions :: Maybe Ident -> [Option]
-defaultOptions ident =
+newline :: Builder
+newline = "\n"
+
+
+fixed :: Decimal -> Builder
+fixed = fromString . showFixed True
+
+
+defaultOptions :: Maybe Name -> [Option]
+defaultOptions name =
   [ Version 5.6
   , Cases True
   , DivideChar "/"
   , BitChars "<>"
-  ] ++
-  [ Design i | i <- toList ident ] ++
-  [ Units $ DistanceList 100 ]
+  ]
+  ++ [ Design i | i <- toList name ]
+  ++ [ Units $ DistanceList 100 ]
 
 
 
@@ -81,14 +89,14 @@ history (History string)
 dieArea :: DieArea -> Builder
 dieArea (DieArea (x1, y1) (x2, y2))
    = "DIEAREA"
-  <> " ( " <> realFloat x1 <> " " <> realFloat y1 <> " )"
-  <> " ( " <> realFloat x2 <> " " <> realFloat y2 <> " )"
+  <> " ( " <> fixed x1 <> " " <> fixed y1 <> " )"
+  <> " ( " <> fixed x2 <> " " <> fixed y2 <> " )"
   <> " ;"
   <> newline
 
 
 option :: Option -> Builder
-option    (Version x) = "VERSION " <> realFloat x <> " ;" <> newline
+option    (Version x) = "VERSION " <> fixed x <> " ;" <> newline
 option  (Cases x) | x = "NAMESCASESENSITIVE ON ;" <> newline
 option      (Cases _) = "NAMESCASESENSITIVE OFF ;" <> newline
 option (DivideChar x) = "DIVIDERCHAR \"" <> fromText x <> "\" ;" <> newline
@@ -113,16 +121,16 @@ row (Row a b x y o c d e f)
 
 tracks :: Tracks -> Builder
 tracks (Tracks xy a b c ls)
-   = "TRACKS "  <> fromText xy <> " " <> realFloat a
+   = "TRACKS "  <> fromText xy <> " " <> fixed a
    <> " DO "    <> decimal b
-   <> " STEP "  <> realFloat c
+   <> " STEP "  <> fixed c
    <> " LAYER" <> foldMap (mappend " " . fromText) ls
    <> " ;" <> newline
 
 
 gcellgrid :: Gcellgrid -> Builder
 gcellgrid (Gcellgrid xy a b c)
-  = "GCELLGRID " <> fromText xy <> " " <> realFloat a
+  = "GCELLGRID " <> fromText xy <> " " <> fixed a
   <> " DO " <> decimal b
   <> " STEP " <> decimal c
   <> " ;" <> newline
@@ -138,8 +146,8 @@ via (Via i rs)
 rect :: Rect -> Builder
 rect (Rect l (x1, y1) (x2, y2))
   = "RECT " <> fromText l
-  <> " ( " <> realFloat x1 <> " " <> realFloat y1 <> " )"
-  <> " ( " <> realFloat x2 <> " " <> realFloat y2 <> " )"
+  <> " ( " <> fixed x1 <> " " <> fixed y1 <> " )"
+  <> " ( " <> fixed x2 <> " " <> fixed y2 <> " )"
 
 
 component :: Component -> Builder
@@ -154,9 +162,9 @@ component (Component a b (Just placed))
 
 placedExpression :: Placed -> Builder
 placedExpression (Placed (x, y) o)
-  = "PLACED" <> " ( " <> realFloat x <> " " <> realFloat y <> " ) " <> fromText o
+  = "PLACED" <> " ( " <> fixed x <> " " <> fixed y <> " ) " <> fromText o
 placedExpression (Fixed (x, y) o)
-  = "FIXED" <> " ( " <> realFloat x <> " " <> realFloat y <> " ) " <> fromText o
+  = "FIXED" <> " ( " <> fixed x <> " " <> fixed y <> " ) " <> fromText o
 placedExpression Unplaced
   = "UNPLACED"
 
@@ -217,8 +225,4 @@ segExpression (Seg l n (x1, y1) xs i)
   <> " ( " <> decimal x1 <> " " <> decimal y1 <> " )"
   <> foldMap (\ (x2, y2) -> " ( " <> maybe "*" decimal x2 <> " " <> maybe "*" decimal y2 <> " )") xs
   <> foldMap (mappend " " . fromText) i
-
-
-newline :: Builder
-newline = fromString "\n"
 

@@ -174,7 +174,7 @@ GCELLGRID        { constTok Tok_Gcellgrid }
 \" @string_character* \"     { textTok (Tok_String . T.drop 1 . T.init)   }
 
 -- Identifiers
-$ident_start @ident_part*      { textTok Tok_Ident }
+$ident_start @ident_part*      { textTok Tok_Identifier }
 
 {
 wrap :: (str -> tok) -> AlexPosn -> str -> Lexer tok

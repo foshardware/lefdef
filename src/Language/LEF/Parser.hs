@@ -44,7 +44,7 @@ option
 
 
 version :: Parser Option
-version = version_ >> Version <$> double
+version = version_ >> Version <$> decimal
     <?> "version"
 
 cases :: Parser Option
@@ -72,53 +72,53 @@ useMinSpacing = useminspacing_ >> (obs_ <|> pin_) >> UseMinSpacing <$> boolean
     <?> "use_min_spacing"
 
 clearanceMeasure :: Parser Option
-clearanceMeasure = clearancemeasure_ >> ClearanceMeasure <$> ident
+clearanceMeasure = clearancemeasure_ >> ClearanceMeasure <$> identifier
     <?> "clearance_measure"
 
 manufacturingGrid :: Parser Option
-manufacturingGrid = manufacturinggrid_ >> ManufacturingGrid <$> double
+manufacturingGrid = manufacturinggrid_ >> ManufacturingGrid <$> decimal
     <?> "manufacturing_grid"
 
 layer :: Parser Layer
 layer = Layer
   <$> layerName
   <*> many layerOption
-  <*> (end_ *> ident)
+  <*> (end_ *> identifier)
   <?> "layer"
 
 layerName :: Parser LayerName
-layerName = layer_ *> ident <?> "layer_name"
+layerName = layer_ *> identifier <?> "layer_name"
 
 layerOption :: Parser LayerOption
 layerOption
-  =   Type         <$> (type_        *> ident ) 
-  <|> LayerSpacing <$> (spacing_     *> double) <*> many spacingOption
+  =   Type         <$> (type_        *> identifier ) 
+  <|> LayerSpacing <$> (spacing_     *> decimal) <*> many spacingOption
   <|> Direction    <$> (direction_   *> layerDirection)
-  <|> Pitch        <$> (pitch_       *> double)
-  <|> Offset       <$> (offset_      *> double <* optional double)
-  <|> Thickness    <$> (thickness_   *> double)
-  <|> Height       <$> (height_      *> double)
-  <|> Width        <$> (width_       *> double)
-  <|> Resistance   <$> (resistance_  *> optional ident) <*> double
+  <|> Pitch        <$> (pitch_       *> decimal)
+  <|> Offset       <$> (offset_      *> decimal <* optional decimal)
+  <|> Thickness    <$> (thickness_   *> decimal)
+  <|> Height       <$> (height_      *> decimal)
+  <|> Width        <$> (width_       *> decimal)
+  <|> Resistance   <$> (resistance_  *> optional identifier) <*> decimal
   <|> SpacingTable <$> (spacingtable_ *> spacingTable)
-  <|> Capacitance  <$> (capacitance_ *> ident ) <*> double
-  <|> EdgeCapacitance <$> (edgecapacitance_ *> double)
+  <|> Capacitance  <$> (capacitance_ *> identifier) <*> decimal
+  <|> EdgeCapacitance <$> (edgecapacitance_ *> decimal)
   <?> "layer_option"
 
 spacingOption :: Parser SpacingOption
 spacingOption
-  =   Range <$> (range_ *> double) <*> double
+  =   Range <$> (range_ *> decimal) <*> decimal
   <?> "spacing_option"
 
 via :: Parser Via
 via = via_ >> Via
   <$> viaName
   <*> many viaLayer
-  <*> (end_ *> ident)
+  <*> (end_ *> identifier)
   <?> "via"
 
 viaName :: Parser ViaName
-viaName = ViaName <$> ident <*> ident <?> "via_name"
+viaName = ViaName <$> identifier <*> identifier <?> "via_name"
 
 viaLayer :: Parser ViaLayer
 viaLayer = ViaLayer
@@ -127,27 +127,27 @@ viaLayer = ViaLayer
   <?> "via_layer"
 
 viaLayerName :: Parser ViaLayerName
-viaLayerName = layer_ *> ident <?> "via_layer_name"
+viaLayerName = layer_ *> identifier <?> "via_layer_name"
 
 viaRect :: Parser ViaRect
 viaRect = rect_ >> ViaRect
-  <$> double
-  <*> double
-  <*> double
-  <*> double
+  <$> decimal
+  <*> decimal
+  <*> decimal
+  <*> decimal
   <?> "via_rect"
 
 viaRule :: Parser ViaRule
 viaRule = ViaRule
   <$> viaRuleName
   <*> many viaRuleLayer
-  <*> (end_ *> ident)
+  <*> (end_ *> identifier)
   <?> "via_rule"
 
 viaRuleName :: Parser ViaRuleName
 viaRuleName = viarule_ >> ViaRuleName
-  <$> ident
-  <*> ident
+  <$> identifier
+  <*> identifier
   <?> "via_rule_name"
 
 viaRuleLayer :: Parser ViaRuleLayer
@@ -157,17 +157,17 @@ viaRuleLayer = ViaRuleLayer
   <?> "via_rule_layer"
 
 viaRuleLayerName :: Parser ViaRuleLayerName
-viaRuleLayerName = layer_ *> ident <?> "via_rule_layer_name"
+viaRuleLayerName = layer_ *> identifier <?> "via_rule_layer_name"
 
 viaRuleLayerOption :: Parser ViaRuleLayerOption
 viaRuleLayerOption
   =   ViaRuleLayerOptionDirection     <$> (direction_ *> layerDirection)
-  <|> ViaRuleLayerOptionWidth         <$> (width_     *> double) <*> (to_ *> double)
-  <|> ViaRuleLayerOptionSpacing       <$> (spacing_   *> double) <*> (by_ *> double)
-  <|> ViaRuleLayerOptionEnclosure     <$> (enclosure_ *> double) <*> double
-  <|> ViaRuleLayerOptionOverhang      <$> (overhang_  *> double)
-  <|> ViaRuleLayerOptionMetalOverhang <$> (metaloverhang_ *> double)
-  <|> ViaRuleLayerOptionRect          <$> (rect_ *> double) <*> double <*> double <*> double
+  <|> ViaRuleLayerOptionWidth         <$> (width_     *> decimal) <*> (to_ *> decimal)
+  <|> ViaRuleLayerOptionSpacing       <$> (spacing_   *> decimal) <*> (by_ *> decimal)
+  <|> ViaRuleLayerOptionEnclosure     <$> (enclosure_ *> decimal) <*> decimal
+  <|> ViaRuleLayerOptionOverhang      <$> (overhang_  *> decimal)
+  <|> ViaRuleLayerOptionMetalOverhang <$> (metaloverhang_ *> decimal)
+  <|> ViaRuleLayerOptionRect          <$> (rect_ *> decimal) <*> decimal <*> decimal <*> decimal
   <?> "via_rule_layer_option"
 
 
@@ -179,9 +179,9 @@ spacing = spacing_ >> Spacing
 
 samenet :: Parser Samenet
 samenet = samenet_ >> Samenet
-  <$> ident
-  <*> ident
-  <*> double
+  <$> identifier
+  <*> identifier
+  <*> decimal
   <*  optional stack_
   <?> "samenet" 
 
@@ -190,28 +190,28 @@ site :: Parser Site
 site = Site
   <$> siteName
   <*> many siteOption
-  <*> (end_ *> ident)
+  <*> (end_ *> identifier)
   <?> "site"
 
 siteName :: Parser SiteName
-siteName = site_ *> ident <?> "site_name"
+siteName = site_ *> identifier <?> "site_name"
 
 siteOption :: Parser SiteOption
 siteOption
-  =   SiteClass    <$> (class_    *> ident )
-  <|> SiteSymmetry <$> (symmetry_ *> ident ) <*> optional ident
-  <|> SiteSize     <$> (size_     *> double) <*> (by_ *> double)
+  =   SiteClass    <$> (class_    *> identifier )
+  <|> SiteSymmetry <$> (symmetry_ *> identifier ) <*> optional identifier
+  <|> SiteSize     <$> (size_     *> decimal) <*> (by_ *> decimal)
   <?> "site_option"
 
 macro :: Parser Macro
 macro = Macro
   <$> macroName
   <*> many macroOption
-  <*> (end_ *> ident)
+  <*> (end_ *> identifier)
   <?> "macro"
 
 macroName :: Parser MacroName
-macroName = macro_ *> ident <?> "macro_name"
+macroName = macro_ *> identifier <?> "macro_name"
 
 pinUsage :: Parser PinUsage
 pinUsage
@@ -224,42 +224,42 @@ pinUsage
 
 macroOption :: Parser MacroOption
 macroOption
-  =   MacroClass    <$> (class_    *> ident ) <*> optional ident
-  <|> MacroForeign  <$> (foreign_  *> ident ) <*> double <*> double
-  <|> MacroOrigin   <$> (origin_   *> double) <*> double
-  <|> MacroSize     <$> (size_     *> double) <*> (by_ *> double)
-  <|> MacroSymmetry <$> (symmetry_ *> ident ) <*> optional ident <*> optional ident
-  <|> MacroSite     <$> (site_     *> ident )
-  <|> MacroPin      <$> (pin_ *> ident) <*> many macroPinOption <*> (end_ *> ident)
+  =   MacroClass    <$> (class_    *> identifier ) <*> optional identifier
+  <|> MacroForeign  <$> (foreign_  *> identifier ) <*> decimal <*> decimal
+  <|> MacroOrigin   <$> (origin_   *> decimal) <*> decimal
+  <|> MacroSize     <$> (size_     *> decimal) <*> (by_ *> decimal)
+  <|> MacroSymmetry <$> (symmetry_ *> identifier ) <*> optional identifier <*> optional identifier
+  <|> MacroSite     <$> (site_     *> identifier )
+  <|> MacroPin      <$> (pin_ *> identifier) <*> many macroPinOption <*> (end_ *> identifier)
   <|> MacroObs      <$> (obs_ *> many macroObsInfo) <* end_
   <?> "macro_option"
 
 macroObsInfo :: Parser MacroObsInfo
 macroObsInfo
-  =   MacroObsLayer <$> (layer_ *> ident) <*> many (polygon_ *> many1 double)
-  <|> MacroObsRect  <$> (rect_ *> double) <*> double <*> double <*> double
+  =   MacroObsLayer <$> (layer_ *> identifier) <*> many (polygon_ *> many1 decimal)
+  <|> MacroObsRect  <$> (rect_ *> decimal) <*> decimal <*> decimal <*> decimal
   <?> "macro_obs_info"
 
 macroPinOption :: Parser MacroPinOption
 macroPinOption
-  =   MacroPinName      <$> (pin_ *> ident)
+  =   MacroPinName      <$> (pin_ *> identifier)
   <|> MacroPinUse       <$> (use_ *> pinUsage)
-  <|> MacroPinDirection <$> (direction_ *> portDirection) <*> optional ident
-  <|> MacroPinShape     <$> (shape_ *> ident)
+  <|> MacroPinDirection <$> (direction_ *> portDirection) <*> optional identifier
+  <|> MacroPinShape     <$> (shape_ *> identifier)
   <|> MacroPinPort      <$> (port_  *> many macroPinPortInfo) <* end_
-  <|> MacroPinAntennaPartialMetalArea     <$> (antennapartialmetalarea_ *> double) <*> (layer_ *> ident)
-  <|> MacroPinAntennaPartialMetalSideArea <$> (antennapartialmetalsidearea_ *> double) <*> (layer_ *> ident)
-  <|> MacroPinAntennaGateArea             <$> (antennagatearea_ *> double)
-  <|> MacroPinAntennaDiffArea             <$> (antennadiffarea_ *> double)
+  <|> MacroPinAntennaPartialMetalArea     <$> (antennapartialmetalarea_ *> decimal) <*> (layer_ *> identifier)
+  <|> MacroPinAntennaPartialMetalSideArea <$> (antennapartialmetalsidearea_ *> decimal) <*> (layer_ *> identifier)
+  <|> MacroPinAntennaGateArea             <$> (antennagatearea_ *> decimal)
+  <|> MacroPinAntennaDiffArea             <$> (antennadiffarea_ *> decimal)
   <?> "macro_pin_option"
 
 macroPinPortInfo :: Parser MacroPinPortInfo
 macroPinPortInfo
-  =   MacroPinPortLayer <$> (layer_ *> ident ) <*> many (polygon_ *> many1 double)
-  <|> MacroPinPortRect  <$> (rect_  *> double) <*> double <*> double <*> double
-  <|> MacroPinPortClass <$> (class_ *> ident )
-  <|> MacroPinPortWidth <$> (width_ *> double)
-  <|> MacroPinPortPath  <$> (path_  *> double) <*> double <*> double <*> double
+  =   MacroPinPortLayer <$> (layer_ *> identifier ) <*> many (polygon_ *> many1 decimal)
+  <|> MacroPinPortRect  <$> (rect_  *> decimal) <*> decimal <*> decimal <*> decimal
+  <|> MacroPinPortClass <$> (class_ *> identifier)
+  <|> MacroPinPortWidth <$> (width_ *> decimal)
+  <|> MacroPinPortPath  <$> (path_  *> decimal) <*> decimal <*> decimal <*> decimal
   <?> "macro_pin_port_info"
 
 endLibrary :: Parser ()
@@ -280,7 +280,7 @@ layerDirection
 
 spacingTable :: Parser Table 
 spacingTable = parallelrunlength_ >> Table
-  <$> many1 double
-  <*> many1 (width_ *> many1 double)
+  <$> many1 decimal
+  <*> many1 (width_ *> many1 decimal)
   <?> "spacing_table"
 

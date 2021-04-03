@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
+{-# LANGUAGE BangPatterns #-}
 
 module Language.LEFDEF.Parser where
 
-import Data.Bifunctor
 import Data.Char
 import Data.Maybe
 import Data.Text (Text)
@@ -16,6 +16,7 @@ import Language.LEFDEF.Lexer
 import Language.LEF.Syntax
 
 
+
 type Parser = GenParser (Lexer Token) ()
 
 
@@ -23,55 +24,60 @@ boolean :: Parser Bool
 boolean = True <$ on_ <|> False <$ off_ <?> "boolean"
 
 
-double :: Parser Double
-double = do
+decimal :: Parser Decimal
+decimal
+  = do
     t <- number
-    case (T.head t, T.findIndex (== '.') t) of
-      ('-', Nothing) -> pure $ fromIntegral $ negate $ numberValue $ T.tail t
-      (_, Nothing) -> pure $ fromIntegral $ numberValue t
+    pure $! case (T.head t, T.findIndex (== '.') t) of
+      ('-', Nothing)
+          -> negate $ fromIntegral $ numberValue $ T.tail t
+      (_, Nothing)
+          -> fromIntegral $ numberValue t
       ('-', Just i)
-         | (a, b) <- T.splitAt i t -> pure
-         $ fromIntegral (negate $ numberValue $ T.tail a)
-         - fractionValue (T.tail b)
+          | (left, right) <- T.splitAt i t
+          -> negate $ fromIntegral (numberValue $ T.tail left) + fractionValue (T.tail right)
       (_, Just i)
-         | (a, b) <- T.splitAt i t -> pure
-         $ fromIntegral (numberValue a)
-         + fractionValue (T.tail b)
-  <?> "double"
+          | (left, right) <- T.splitAt i t
+          -> fromIntegral (numberValue left) + fractionValue (T.tail right)
+  <?> "decimal"
+
 
 integer :: Parser Integer
-integer = do
+integer
+  = do
     t <- number
-    case T.head t of
-      '-' -> pure $ fromIntegral $ negate $ numberValue $ T.tail t
-      _   -> pure $ fromIntegral $ numberValue t
+    pure $! case T.head t of
+      '-' -> fromIntegral $ negate $ numberValue $ T.tail t
+      _   -> fromIntegral $ numberValue t
   <?> "integer"
 
 
+
 numberValue :: Text -> Int
-numberValue = T.foldl (\ x c -> 10 * x + digitToInt c) 0
+numberValue = T.foldl' (\ x c -> 10 * x + digitToInt c) 0
 
 
-fractionValue :: Text -> Double
+fractionValue :: Text -> Decimal
 fractionValue
-    = uncurry (/)
-    . bimap fromIntegral fromIntegral
-    . T.foldl (\ (s, x) d -> (x * digitToInt d + s, x * 10)) (0, 1)
-    . T.dropWhile (== '0')
-    . T.reverse
+  = (\ (s, x) -> fromIntegral s / fromIntegral x)
+  . T.foldl' (\ (!s, !x) d -> (x * digitToInt d + s, x * 10)) (0, 1)
+  . T.dropWhile (== '0')
+  . T.reverse
+
 
 
 maybeToken :: (Token -> Maybe a) -> Parser a
 maybeToken test = token showT posT testT
   where
-  showT (L _ t) = show t
-  posT  (L x _) = pos2sourcePos x
-  testT (L _ t) = test t
-  pos2sourcePos (l, c) = newPos "" l c
+    showT (L _ t) = show t
+    posT  (L x _) = pos2sourcePos x
+    testT (L _ t) = test t
+    pos2sourcePos (l, c) = newPos "" l c
 
-ident :: Parser Ident
-ident = maybeToken q
-  where q (Tok_Ident  t) = Just t
+
+identifier :: Parser Name
+identifier = maybeToken q
+  where q (Tok_Identifier t) = Just t
         q _ = Nothing
 
 number :: Parser Text
@@ -84,8 +90,10 @@ stringLiteral = maybeToken q
   where q (Tok_String t) = Just t
         q _ = Nothing
 
+
 p :: Token -> Parser ()
 p t = maybeToken $ \r -> if r == t then Just () else Nothing
+
 end_ = p Tok_End
 library_ = p Tok_Library
 version_ = p Tok_Version

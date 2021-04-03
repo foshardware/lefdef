@@ -18,10 +18,11 @@ main = do
 
 
 pullSubmodules :: IO ()
-pullSubmodules = git ["submodule", "update", "--init", "--recursive"] $ \ h -> putStr =<< hGetContents h
+pullSubmodules = git ["submodule", "update", "--init", "--recursive"] putStr
 
 
-
-git :: [String] -> (Handle -> IO ()) -> IO ()
-git xs p = withCreateProcess (proc "git" xs) { std_out = CreatePipe } (\ _ (Just i) _ _ -> p i)
+git :: [String] -> (String-> IO ()) -> IO ()
+git xs sink  = withCreateProcess
+  (proc "git" xs) { std_out = CreatePipe }
+  (\ _ (Just i) _ _ -> sink =<< hGetContents i)
 

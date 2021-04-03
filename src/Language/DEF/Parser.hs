@@ -47,8 +47,8 @@ section title parser = do
 
 dieArea :: Parser DieArea
 dieArea = diearea_ >> DieArea
-  <$> tuple double 
-  <*> tuple double
+  <$> tuple decimal
+  <*> tuple decimal
   <?> "die_area"
 
 
@@ -59,8 +59,8 @@ tuple f = between lparen_ rparen_ ((,) <$> f <*> f)
 
 row :: Parser Row
 row = row_ >> Row
-  <$> ident
-  <*> ident
+  <$> identifier
+  <*> identifier
   <*> integer
   <*> integer
   <*> orientation
@@ -74,24 +74,24 @@ row = row_ >> Row
 tracks :: Parser Tracks
 tracks = tracks_ >> Tracks
   <$> xy
-  <*> double
+  <*> decimal
   <*> (do_ *> integer)
-  <*> (step_ *> double)
-  <*> (layer_ *> many ident)
+  <*> (step_ *> decimal)
+  <*> (layer_ *> many identifier)
   <?> "track"
 
 
 gcellgrid :: Parser Gcellgrid
 gcellgrid = gcellgrid_ >> Gcellgrid
   <$> xy
-  <*> double
+  <*> decimal
   <*> (do_ *> integer)
   <*> (step_ *> integer)
   <?> "gcellgrid"
 
 
 xy :: Parser XY
-xy = ident <?> "xy"
+xy = identifier <?> "xy"
 
 
 vias :: Parser (Vector Via)
@@ -100,16 +100,16 @@ vias = section vias_ via <?> "vias"
 
 via :: Parser Via
 via = Via
-  <$> ident
+  <$> identifier
   <*> (plus_ *> sepBy rect plus_)
   <?> "via"
 
 
 rect :: Parser Rect
 rect = rect_ >> Rect
-  <$> ident
-  <*> tuple double
-  <*> tuple double
+  <$> identifier
+  <*> tuple decimal
+  <*> tuple decimal
   <?> "rect"
 
 
@@ -119,8 +119,8 @@ components = section components_ component <?> "components"
 
 component :: Parser Component
 component = Component
-  <$> ident
-  <*> ident
+  <$> identifier
+  <*> identifier
   <*> optional (plus_ *> placed)
   <*  optional (plus_ *> source_ *> dist_)
   <?> "component"
@@ -129,16 +129,16 @@ component = Component
 placed :: Parser Placed
 placed
   =   (placed_ >> Placed
-      <$> tuple double
+      <$> tuple decimal
       <*> orientation)
   <|> (fixed_ >> Fixed
-      <$> tuple double
+      <$> tuple decimal
       <*> orientation)
   <?> "placed"
 
 
-orientation :: Parser Orient
-orientation = ident <?> "orientation"
+orientation :: Parser Orientation
+orientation = identifier <?> "orientation"
 
 
 pins :: Parser (Vector Pin)
@@ -147,7 +147,7 @@ pins = section pins_ pin <?> "pins"
 
 layer :: Parser Layer
 layer = layer_ >> Layer
-  <$> ident
+  <$> identifier
   <*> tuple integer
   <*> tuple integer
   <?> "layer"
@@ -155,8 +155,8 @@ layer = layer_ >> Layer
 
 pin :: Parser Pin
 pin = Pin
-  <$> ident
-  <*> (optional plus_ *> optional (net_ *> ident))
+  <$> identifier
+  <*> (optional plus_ *> optional (net_ *> identifier))
   <*> (optional plus_ *> optional direction <* optional plus_ <* optional use_ <* optional signal_)
   <*> (optional plus_ *> optional layer)
   <*> (optional plus_ *> optional placed)
@@ -178,7 +178,7 @@ specialnets = section specialnets_ specialnet <?> "specialnets"
 
 net :: Parser Net
 net = Net
-  <$> ident
+  <$> identifier
   <*> many (lparen_ *> contact <* rparen_)
   <*> (optional plus_ *> optional routed)
   <?> "net"
@@ -186,15 +186,15 @@ net = Net
 
 specialnet :: Parser Specialnet
 specialnet = Specialnet
-  <$> ident
+  <$> identifier
   <*> (optional plus_ *> optional routed) 
   <?> "specialnet"
 
 
 contact :: Parser Contact
 contact
-  =   Left  <$> (pin_ *> ident)
-  <|> Right <$> ((,) <$> ident <*> ident)
+  =   Left  <$> (pin_ *> identifier)
+  <|> Right <$> ((,) <$> identifier <*> identifier)
   <?> "contact"
 
 
@@ -206,11 +206,11 @@ routed = routed_ >> Routed
 
 segment :: Parser (Segment Integer)
 segment = Seg
-  <$> ident
+  <$> identifier
   <*> optional integer
   <*> tuple integer
   <*> many (tuple (Nothing <$ star_ <|> Just <$> integer))
-  <*> optional ident 
+  <*> optional identifier
   <?> "segment"
 
 
@@ -229,11 +229,11 @@ option
 
 
 design :: Parser Option
-design = design_ >> Design <$> ident
+design = design_ >> Design <$> identifier
     <?> "design"
 
 version :: Parser Option
-version = version_ >> Version <$> double
+version = version_ >> Version <$> decimal
     <?> "version"
 
 cases :: Parser Option
@@ -261,11 +261,11 @@ useMinSpacing = useminspacing_ >> (obs_ <|> pin_) >> UseMinSpacing <$> boolean
     <?> "use_min_spacing"
 
 clearanceMeasure :: Parser Option
-clearanceMeasure = clearancemeasure_ >> ClearanceMeasure <$> ident
+clearanceMeasure = clearancemeasure_ >> ClearanceMeasure <$> identifier
     <?> "clearance_measure"
 
 manufacturingGrid :: Parser Option
-manufacturingGrid = manufacturinggrid_ >> ManufacturingGrid <$> double
+manufacturingGrid = manufacturinggrid_ >> ManufacturingGrid <$> decimal
     <?> "manufacturing_grid"
 
 

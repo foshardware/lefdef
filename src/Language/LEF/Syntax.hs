@@ -1,22 +1,27 @@
 
 module Language.LEF.Syntax where
 
-import Data.Text (Text)
+import Data.Text
+import Data.Fixed
 
-type Ident = Text
+
+type Name = Text
+
+type Decimal = Fixed E12
+
 
 data LEF = LEF [Option] [Layer] [Via] [ViaRule] Spacing [Site] [Macro]
   deriving (Eq, Show)
 
 data Option
-  = Version Double
+  = Version Decimal
   | Cases Bool
-  | BitChars Ident
-  | DivideChar Ident
+  | BitChars Name
+  | DivideChar Name
   | Units DatabaseList
   | UseMinSpacing Bool
-  | ClearanceMeasure Ident
-  | ManufacturingGrid Double
+  | ClearanceMeasure Name
+  | ManufacturingGrid Decimal
   deriving (Eq, Show)
 
 newtype DatabaseList = DatabaseList Integer
@@ -25,25 +30,25 @@ newtype DatabaseList = DatabaseList Integer
 data Layer = Layer LayerName [LayerOption] Text
   deriving (Eq, Show)
 
-type LayerName = Ident
+type LayerName = Name
 
 data LayerOption
-  = Type Ident
-  | LayerSpacing Double [SpacingOption]
+  = Type Name
+  | LayerSpacing Decimal [SpacingOption]
   | Direction LayerDirection
-  | Pitch Double
-  | Offset Double
-  | Thickness Double
-  | Height Double
-  | Width Double
-  | Resistance (Maybe Ident) Double
-  | Capacitance Ident Double
-  | EdgeCapacitance Double
+  | Pitch Decimal
+  | Offset Decimal
+  | Thickness Decimal
+  | Height Decimal
+  | Width Decimal
+  | Resistance (Maybe Name) Decimal
+  | Capacitance Name Decimal
+  | EdgeCapacitance Decimal
   | SpacingTable Table
   deriving (Eq, Show)
 
 data SpacingOption
-  = Range Double Double
+  = Range Decimal Decimal
   deriving (Eq, Show)
 
 data PortDirection = Input | Output | InputOutput
@@ -52,108 +57,108 @@ data PortDirection = Input | Output | InputOutput
 data LayerDirection = Horizontal | Vertical
   deriving (Eq, Show)
 
-data Via = Via ViaName [ViaLayer] Ident
+data Via = Via ViaName [ViaLayer] Name
   deriving (Eq, Show)
 
-data ViaName = ViaName Ident Ident
+data ViaName = ViaName Name Name
   deriving (Eq, Show)
 
 data ViaLayer = ViaLayer ViaLayerName [ViaRect]
   deriving (Eq, Show)
 
-type ViaLayerName = Ident
+type ViaLayerName = Name
 
-data ViaRect = ViaRect Double Double Double Double
+data ViaRect = ViaRect Decimal Decimal Decimal Decimal
   deriving (Eq, Show)
 
-data ViaRule = ViaRule ViaRuleName [ViaRuleLayer] Ident
+data ViaRule = ViaRule ViaRuleName [ViaRuleLayer] Name
   deriving (Eq, Show)
 
-data ViaRuleName = ViaRuleName Ident Ident
+data ViaRuleName = ViaRuleName Name Name
   deriving (Eq, Show)
 
 data ViaRuleLayer = ViaRuleLayer ViaRuleLayerName [ViaRuleLayerOption]
   deriving (Eq, Show)
 
-type ViaRuleLayerName = Ident
+type ViaRuleLayerName = Name
 
 data ViaRuleLayerOption
   = ViaRuleLayerOptionDirection LayerDirection
-  | ViaRuleLayerOptionWidth Double Double
-  | ViaRuleLayerOptionWidthDiscrete Double Integer
-  | ViaRuleLayerOptionOverhang Double
-  | ViaRuleLayerOptionEnclosure Double Double
+  | ViaRuleLayerOptionWidth Decimal Decimal
+  | ViaRuleLayerOptionWidthDiscrete Decimal Integer
+  | ViaRuleLayerOptionOverhang Decimal
+  | ViaRuleLayerOptionEnclosure Decimal Decimal
   | ViaRuleLayerOptionOverhangDiscrete Integer
-  | ViaRuleLayerOptionMetalOverhang Double
+  | ViaRuleLayerOptionMetalOverhang Decimal
   | ViaRuleLayerOptionMetalOverhangDiscrete Integer
-  | ViaRuleLayerOptionRect Double Double Double Double
-  | ViaRuleLayerOptionSpacing Double Double
+  | ViaRuleLayerOptionRect Decimal Decimal Decimal Decimal
+  | ViaRuleLayerOptionSpacing Decimal Decimal
   deriving (Eq, Show)
 
 
 data Spacing = Spacing [Samenet]
   deriving (Eq, Show)
 
-data Samenet = Samenet Ident Ident Double
+data Samenet = Samenet Name Name Decimal
   deriving (Eq, Show)
 
 
-data Site = Site SiteName [SiteOption] Ident
+data Site = Site SiteName [SiteOption] Name
   deriving (Eq, Show)
 
-type SiteName = Ident
+type SiteName = Name
 
 data SiteOption
-  = SiteClass Ident
-  | SiteSymmetry Ident (Maybe Ident)
-  | SiteSize Double Double
+  = SiteClass Name
+  | SiteSymmetry Name (Maybe Name)
+  | SiteSize Decimal Decimal
   deriving (Eq, Show)
 
-data Macro = Macro MacroName [MacroOption] Ident
+data Macro = Macro MacroName [MacroOption] Name
   deriving (Eq, Show)
 
-data Table = Table [Double] [[Double]]
+data Table = Table [Decimal] [[Decimal]]
   deriving (Eq, Show)
 
-type MacroName = Ident
+type MacroName = Name
 
 data PinUsage = Analog | Clock | Ground | Power | Signal
   deriving (Eq, Show)
 
 data MacroOption
-  = MacroClass Ident (Maybe Ident)
-  | MacroForeign Ident Double Double
-  | MacroOrigin Double Double
-  | MacroSize Double Double
-  | MacroSymmetry Ident (Maybe Ident) (Maybe Ident)
-  | MacroSite Ident
-  | MacroPin Ident [MacroPinOption] Ident
+  = MacroClass Name (Maybe Name)
+  | MacroForeign Name Decimal Decimal
+  | MacroOrigin Decimal Decimal
+  | MacroSize Decimal Decimal
+  | MacroSymmetry Name (Maybe Name) (Maybe Name)
+  | MacroSite Name
+  | MacroPin Name [MacroPinOption] Name
   | MacroObs [MacroObsInfo]
   deriving (Eq, Show)
 
 data MacroPinOption
-  = MacroPinName Ident
+  = MacroPinName Name
   | MacroPinUse PinUsage
-  | MacroPinDirection PortDirection (Maybe Ident)
-  | MacroPinShape Ident
+  | MacroPinDirection PortDirection (Maybe Name)
+  | MacroPinShape Name
   | MacroPinPort [MacroPinPortInfo]
-  | MacroPinAntennaPartialMetalArea Double Ident
-  | MacroPinAntennaPartialMetalSideArea Double Ident
-  | MacroPinAntennaGateArea Double
-  | MacroPinAntennaDiffArea Double
+  | MacroPinAntennaPartialMetalArea Decimal Name
+  | MacroPinAntennaPartialMetalSideArea Decimal Name
+  | MacroPinAntennaGateArea Decimal
+  | MacroPinAntennaDiffArea Decimal
   deriving (Eq, Show)
 
 data MacroPinPortInfo
-  = MacroPinPortLayer Ident [[Double]]
-  | MacroPinPortRect Double Double Double Double
-  | MacroPinPortClass Ident
-  | MacroPinPortWidth Double
-  | MacroPinPortPath Double Double Double Double
+  = MacroPinPortLayer Name [[Decimal]]
+  | MacroPinPortRect Decimal Decimal Decimal Decimal
+  | MacroPinPortClass Name
+  | MacroPinPortWidth Decimal
+  | MacroPinPortPath Decimal Decimal Decimal Decimal
   deriving (Eq, Show)
 
 data MacroObsInfo
-  = MacroObsLayer Ident [[Double]]
-  | MacroObsRect Double Double Double Double
+  = MacroObsLayer Name [[Decimal]]
+  | MacroObsRect Decimal Decimal Decimal Decimal
   deriving (Eq, Show)
 
 
